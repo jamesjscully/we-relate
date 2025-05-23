@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="text-center">
+    <h1 class="mb-4">Welcome to We Relate</h1>
+    <p class="lead text-muted mb-5">
+        Practice healthy communication and de-escalation techniques in all your relationships.
+    </p>
+    
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-chat-dots display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Start a New Chat</h5>
+                    <p class="card-text">
+                        Get AI-powered coaching to improve your communication skills in any relationship.
+                    </p>
+                    <a href="{{ url_for('chat') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> New Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Manage Your People</h5>
+                    <p class="card-text">
+                        Add profiles for important people in your life to get personalized coaching advice.
+                    </p>
+                    <a href="{{ url_for('new_person') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus"></i> Add Person
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if conversations %}
+    <div class="mt-5">
+        <h3 class="mb-4">Recent Conversations</h3>
+        <div class="row">
+            {% for conversation in conversations %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ conversation.title }}</h6>
+                        <p class="card-text text-muted small">
+                            {{ conversation.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                        {% if conversation.scenario %}
+                        <p class="card-text small">
+                            {{ conversation.scenario[:100] }}{% if conversation.scenario|length > 100 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                        <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-sm btn-outline-primary">
+                            Continue
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

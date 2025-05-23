@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="mb-4">Start New Conversation</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form action="{{ url_for('new_chat') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="person_id" class="form-label">Person (Optional)</label>
+                        <select class="form-select" id="person_id" name="person_id">
+                            <option value="">General coaching (no specific person)</option>
+                            {% for person in people %}
+                            <option value="{{ person.id }}">{{ person.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Select a person to get personalized advice based on their profile.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scenario" class="form-label">Scenario Description (Optional)</label>
+                        <textarea class="form-control" id="scenario" name="scenario" rows="4" 
+                                  placeholder="Describe the situation you want to practice or get advice about. For example: 'We had an argument about household chores and I want to apologize properly' or 'I need to bring up a sensitive topic about finances'"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-chat-dots"></i> Start Conversation
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {% if not people %}
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-lightbulb"></i>
+            <strong>Tip:</strong> <a href="{{ url_for('new_person') }}">Add information about people in your life</a> 
+            to get more personalized and effective coaching advice.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

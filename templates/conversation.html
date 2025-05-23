@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<div class="d-flex flex-column h-100">
+    {% if conversation.scenario %}
+    <div class="alert alert-info mb-3">
+        <strong>Scenario:</strong> {{ conversation.scenario }}
+    </div>
+    {% endif %}
+    
+    <div class="card flex-grow-1 d-flex flex-column">
+        <div class="card-body flex-grow-1 d-flex flex-column p-0">
+            <div class="chat-messages flex-grow-1" id="chat-container">
+                <div id="messages-container">
+                    {% for message in messages %}
+                    {% include 'message_partial.html' %}
+                    {% endfor %}
+                </div>
+                
+                {% if not messages %}
+                <div class="text-center text-muted h-100 d-flex align-items-center justify-content-center">
+                    <div>
+                        <i class="bi bi-chat-quote display-4"></i>
+                        <p class="mt-3">Start your conversation below. I'm here to help you practice healthy communication!</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="border-top p-3">
+                <form hx-post="{{ url_for('send_message', conversation_id=conversation.id) }}" 
+                      hx-target="#messages-container" 
+                      hx-swap="beforeend"
+                      hx-on::after-request="this.reset(); scrollToBottom()">
+                    <div class="input-group">
+                        <textarea class="form-control" name="message" placeholder="Type your message..." 
+                                  rows="1" required style="resize: none; max-height: 120px;"
+                                  onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); this.form.requestSubmit(); }"
+                                  oninput="autoResize(this)"></textarea>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted">Press Enter to send, Shift+Enter for new line</small>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.content-area {
+    padding: 1rem !important;
+    height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    height: calc(70vh);
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        height: calc(100vh - 60px);
+        padding: 0.5rem !important;
+    }
+    
+    .chat-messages {
+        height: calc(100vh - 200px);
+    }
+}
+</style>
+
+<script>
+function scrollToBottom() {
+    const container = document.getElementById('chat-container');
+    container.scrollTop = container.scrollHeight;
+}
+
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
+
+// Scroll to bottom on page load
+document.addEventListener('DOMContentLoaded', scrollToBottom);
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Login - We Relate{% endblock %}
+
+{% block main_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Welcome</h2>
+                <p class="text-muted text-center mb-4">
+                    Enter your username to practice healthy communication in all your relationships
+                </p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="form-text">
+                            This is a demo app - any username will work
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Continue</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
