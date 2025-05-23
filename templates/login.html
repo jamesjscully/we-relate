@@ -6,24 +6,43 @@
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
         <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">Welcome</h2>
-                <p class="text-muted text-center mb-4">
-                    Enter your username to practice healthy communication in all your relationships
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4 text-primary mb-4"></i>
+                <h2 class="card-title mb-4">Welcome to We Relate</h2>
+                <p class="text-muted mb-4">
+                    Practice healthy communication and de-escalation techniques in all your relationships.
                 </p>
                 
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                        <div class="form-text">
-                            This is a demo app - any username will work
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100">Continue</button>
-                </form>
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Google OAuth Login -->
+                <a href="{{ url_for('google.login') }}" class="btn btn-danger btn-lg w-100 mb-3">
+                    <i class="bi bi-google me-2"></i>
+                    Continue with Google
+                </a>
+                
+                <p class="text-muted small">
+                    Secure authentication powered by Google OAuth.<br>
+                    We only store your email and basic profile information.
+                </p>
             </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                By continuing, you agree to our privacy policy.<br>
+                Your conversations are private and stored locally.
+            </small>
         </div>
     </div>
 </div>

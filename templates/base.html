@@ -59,12 +59,20 @@
         <!-- User Section -->
         <div class="sidebar-footer">
             <div class="dropdown">
-                <button class="btn btn-link w-100 text-start" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle me-2"></i>
-                    {% if session.user_id %}
-                        {{ get_current_user().username if get_current_user() else 'User' }}
+                <button class="btn btn-link w-100 text-start d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                    {% if session.user_id and get_current_user() %}
+                        {% set user = get_current_user() %}
+                        {% if user.picture %}
+                            <img src="{{ user.picture }}" class="rounded-circle me-2" width="24" height="24" alt="Profile">
+                        {% else %}
+                            <i class="bi bi-person-circle me-2"></i>
+                        {% endif %}
+                        <span class="flex-grow-1 text-truncate">{{ user.name or user.username or 'User' }}</span>
+                    {% else %}
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span class="flex-grow-1">User</span>
                     {% endif %}
-                    <i class="bi bi-three-dots-vertical ms-auto"></i>
+                    <i class="bi bi-three-dots-vertical ms-2"></i>
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="{{ url_for('logout') }}">

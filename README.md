@@ -40,6 +40,7 @@ A ChatGPT-style web application for improving de-escalation communication skills
 ### Prerequisites
 - Python 3.11+
 - Anthropic API key from [console.anthropic.com](https://console.anthropic.com/)
+- Google OAuth credentials (see [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md))
 
 ### Local Installation
 
@@ -57,9 +58,14 @@ A ChatGPT-style web application for improving de-escalation communication skills
    ```
    ANTHROPIC_API_KEY=sk-ant-your-key-here
    SECRET_KEY=your-random-secret-key
+   GOOGLE_OAUTH_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+   GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
    ```
 
-3. **Run the application**
+3. **Set up Google OAuth**
+   Follow the detailed guide in [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md) to configure Google authentication.
+
+4. **Run the application**
    ```bash
    python run.py
    ```

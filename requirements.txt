@@ -4,3 +4,5 @@ anthropic==0.34.2
 python-dotenv==1.0.1
 httpx>=0.25.0
 httpcore>=1.0.0
+Flask-Dance==7.0.0
+requests==2.31.0

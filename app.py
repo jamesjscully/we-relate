@@ -1,6 +1,8 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin, SQLAlchemyStorage
 from datetime import datetime
 import anthropic
 from dotenv import load_dotenv
@@ -18,9 +20,23 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/we_relate.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Google OAuth configuration
+app.config['GOOGLE_OAUTH_CLIENT_ID'] = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+app.config['GOOGLE_OAUTH_CLIENT_SECRET'] = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+
 db = SQLAlchemy(app)
 
-# Mock authentication service
+# Create Google OAuth blueprint
+google_bp = make_google_blueprint(
+    client_id=app.config['GOOGLE_OAUTH_CLIENT_ID'],
+    client_secret=app.config['GOOGLE_OAUTH_CLIENT_SECRET'],
+    scope=["openid", "email", "profile"]
+)
+app.register_blueprint(google_bp, url_prefix="/login")
+
+# Set up OAuth storage after models are defined
+
+# Authentication service
 def is_authenticated():
     return session.get('user_id') is not None
 
@@ -28,6 +44,30 @@ def get_current_user():
     if is_authenticated():
         return User.query.get(session['user_id'])
     return None
+
+def create_or_update_user(user_info):
+    """Create or update user from Google OAuth info"""
+    user = User.query.filter_by(email=user_info['email']).first()
+    
+    if not user:
+        user = User(
+            email=user_info['email'],
+            username=user_info.get('name', user_info['email'].split('@')[0]),
+            google_id=user_info['id'],
+            name=user_info.get('name'),
+            picture=user_info.get('picture')
+        )
+        db.session.add(user)
+    else:
+        # Update existing user info
+        user.google_id = user_info['id']
+        user.name = user_info.get('name')
+        user.picture = user_info.get('picture')
+        if not user.username:
+            user.username = user_info.get('name', user_info['email'].split('@')[0])
+    
+    db.session.commit()
+    return user
 
 # Make functions available to templates
 @app.context_processor
@@ -37,12 +77,23 @@ def inject_user():
 # Database Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    name = db.Column(db.String(100), nullable=True)
+    picture = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     people = db.relationship('Person', backref='user', lazy=True, cascade='all, delete-orphan')
     conversations = db.relationship('Conversation', backref='user', lazy=True, cascade='all, delete-orphan')
+
+class OAuth(OAuthConsumerMixin, db.Model):
+    provider_user_id = db.Column(db.String(256), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    user = db.relationship("User")
+
+# Set up OAuth storage after models are defined
+google_bp.storage = SQLAlchemyStorage(OAuth, db.session, user=lambda: get_current_user())
 
 class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -120,26 +171,49 @@ def index():
     
     return render_template('index.html', user=user, conversations=recent_conversations, people=people)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        user = User.query.filter_by(username=username).first()
-        
-        if not user:
-            # Create new user for mock auth
-            user = User(username=username, email=f"{username}@example.com")
-            db.session.add(user)
-            db.session.commit()
-        
-        session['user_id'] = user.id
+    # Check if user is already authenticated
+    if is_authenticated():
         return redirect(url_for('index'))
     
     return render_template('login.html')
 
+@app.route('/auth/google')
+def google_login():
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+    
+    # Get user info from Google
+    resp = google.get("/oauth2/v2/userinfo")
+    if not resp.ok:
+        flash('Failed to fetch user info from Google', 'error')
+        return redirect(url_for('login'))
+    
+    user_info = resp.json()
+    
+    # Create or update user
+    user = create_or_update_user(user_info)
+    
+    # Log the user in
+    session['user_id'] = user.id
+    
+    flash(f'Welcome, {user.name or user.username}!', 'success')
+    return redirect(url_for('index'))
+
+# OAuth callback handler
+@google_bp.route('/authorized')
+def google_logged_in():
+    if not google.authorized:
+        flash('Authorization failed', 'error')
+        return redirect(url_for('login'))
+    
+    return redirect(url_for('google_login'))
+
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
+    session.clear()
+    flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
 @app.route('/api/sidebar-data')
