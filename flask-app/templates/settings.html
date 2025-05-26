@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AI Chat Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-2">Account Settings</h1>
+            <p class="text-muted mb-5">Manage your account preferences and profile information</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Profile Settings -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>Profile Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                                <div class="form-text">Username cannot be changed</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" value="{{ user.email }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" placeholder="Enter your first name">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" placeholder="Enter your last name">
+                            </div>
+                            <div class="col-12">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Chat Preferences -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comments me-2"></i>Chat Preferences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="defaultAgent" class="form-label">Default AI Agent</label>
+                                <select class="form-select" id="defaultAgent">
+                                    <option value="general">General Assistant</option>
+                                    <option value="teacher">Teacher Agent</option>
+                                    <option value="student">Student Agent</option>
+                                    <option value="counselor">Counselor Agent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="responseLength" class="form-label">Response Length</label>
+                                <select class="form-select" id="responseLength">
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enableNotifications" checked>
+                                    <label class="form-check-label" for="enableNotifications">
+                                        Enable push notifications
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enableSounds" checked>
+                                    <label class="form-check-label" for="enableSounds">
+                                        Enable notification sounds
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="saveHistory" checked>
+                                    <label class="form-check-label" for="saveHistory">
+                                        Save conversation history
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Security Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6>Change Password</h6>
+                                <hr>
+                            </div>
+                            <div class="col-12">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmNewPassword" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-key me-2"></i>Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Summary -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Account Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ user.username[0].upper() }}
+                        </div>
+                        <h5 class="mb-1">{{ user.username }}</h5>
+                        <span class="tier-badge tier-{{ user.tier }}">{{ user.tier|title }}</span>
+                    </div>
+
+                    <ul class="list-unstyled">
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-envelope text-muted me-2"></i>Email</span>
+                            <small class="text-muted">{{ user.email }}</small>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-coins text-muted me-2"></i>Credits</span>
+                            <span class="badge bg-success">{{ user.credits }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-calendar text-muted me-2"></i>Member Since</span>
+                            <small class="text-muted">Jan 2024</small>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-comments text-muted me-2"></i>Conversations</span>
+                            <small class="text-muted">127</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('billing') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-credit-card me-2"></i>Manage Billing
+                        </a>
+                        <button class="btn btn-outline-info">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-trash me-2"></i>Clear History
+                        </button>
+                        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="fas fa-user-times me-2"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Access -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-code me-2"></i>API Access
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">Use our API to integrate AI chat into your applications</p>
+                    
+                    <div class="mb-3">
+                        <label for="apiKey" class="form-label">API Key</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="apiKey" value="sk-1234567890abcdef" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleApiKey()">
+                                <i class="fas fa-eye" id="apiKeyToggle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-sync me-2"></i>Regenerate Key
+                        </button>
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-book me-2"></i>View Docs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                </div>
+                <p>Are you sure you want to delete your account? This will:</p>
+                <ul>
+                    <li>Delete all your conversation history</li>
+                    <li>Cancel your subscription</li>
+                    <li>Remove all personal data</li>
+                    <li>Revoke API access</li>
+                </ul>
+                <div class="mb-3">
+                    <label for="confirmDelete" class="form-label">Type "DELETE" to confirm:</label>
+                    <input type="text" class="form-control" id="confirmDelete" placeholder="DELETE">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleApiKey() {
+        const apiKeyInput = document.getElementById('apiKey');
+        const toggleIcon = document.getElementById('apiKeyToggle');
+        
+        if (apiKeyInput.type === 'password') {
+            apiKeyInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            apiKeyInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    // Delete account confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmInput = document.getElementById('confirmDelete');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        confirmInput.addEventListener('input', function() {
+            if (this.value === 'DELETE') {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
+        });
+
+        confirmBtn.addEventListener('click', function() {
+            // Here you would implement the actual delete functionality
+            alert('Account deletion would be implemented here');
+        });
+    });
+</script>
+{% endblock %} 

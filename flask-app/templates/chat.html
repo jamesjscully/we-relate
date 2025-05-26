@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - AI Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 76px);
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        margin: 0;
+    }
+
+    .user-info-bar {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .user-details {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    .user-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .credits-display {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .tier-display {
+        padding: 0.25rem 0.75rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+    }
+
+    .tier-free { background-color: #e2e8f0; color: #475569; }
+    .tier-premium { background-color: #fbbf24; color: #92400e; }
+    .tier-enterprise { background-color: #8b5cf6; color: white; }
+
+    #chainlit-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        flex: 1;
+        background: white;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        text-align: center;
+    }
+
+    .spinner-border {
+        color: var(--primary-color);
+    }
+
+    .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--success-color);
+        animation: pulse 2s infinite;
+    }
+
+    .status-indicator.disconnected {
+        background-color: var(--danger-color);
+        animation: none;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .refresh-btn {
+        background: none;
+        border: none;
+        color: var(--secondary-color);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+        background-color: rgba(0,0,0,0.1);
+        color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .user-info-bar {
+            padding: 0.5rem 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .user-stats {
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- User Info Bar -->
+    <div class="user-info-bar">
+        <div class="user-details">
+            <div class="user-avatar">
+                {{ user.username[0].upper() }}
+            </div>
+            <div>
+                <div class="user-name">{{ user.username }}</div>
+                <div class="connection-status">
+                    <div class="status-indicator" id="connection-status"></div>
+                    <span id="connection-text">Connected</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="user-stats">
+            <div class="stat-item">
+                <i class="fas fa-coins"></i>
+                <span class="credits-display" id="credits-display">{{ user.credits }} credits</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-crown"></i>
+                <span class="tier-display tier-{{ user.tier }}">{{ user.tier }}</span>
+            </div>
+            <button class="refresh-btn" onclick="refreshChat()" title="Refresh Chat">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Frame Container -->
+    <div style="position: relative; flex: 1;">
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="mt-2">Loading chat interface...</div>
+            </div>
+        </div>
+        
+        <iframe 
+            id="chainlit-frame"
+            src="{{ chainlit_url }}"
+            allow="microphone; camera"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals">
+        </iframe>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // User data from Flask template
+    const userData = {
+        id: {{ user.id }},
+        username: '{{ user.username }}',
+        tier: '{{ user.tier }}',
+        credits: {{ user.credits }}
+    };
+
+    let creditsUpdateInterval;
+    let connectionCheckInterval;
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeChat();
+        startCreditsMonitoring();
+        startConnectionMonitoring();
+    });
+
+    function initializeChat() {
+        const iframe = document.getElementById('chainlit-frame');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        // Hide loading overlay when iframe loads
+        iframe.addEventListener('load', function() {
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                sendUserContext();
+            }, 1000);
+        });
+
+        // Handle iframe errors
+        iframe.addEventListener('error', function() {
+            loadingOverlay.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-warning fs-1 mb-3"></i>
+                    <h5>Connection Error</h5>
+                    <p class="text-muted">Unable to load chat interface. Please try refreshing.</p>
+                    <button class="btn btn-primary" onclick="refreshChat()">
+                        <i class="fas fa-sync-alt me-2"></i>Retry
+                    </button>
+                </div>
+            `;
+        });
+
+        // Listen for messages from Chainlit iframe
+        window.addEventListener('message', function(event) {
+            handleIframeMessage(event);
+        });
+    }
+
+    function handleIframeMessage(event) {
+        // Handle messages from Chainlit service
+        if (event.data && typeof event.data === 'object') {
+            switch(event.data.type) {
+                case 'credits_used':
+                    updateCreditsDisplay();
+                    break;
+                case 'connection_status':
+                    updateConnectionStatus(event.data.connected);
+                    break;
+                case 'error':
+                    showNotification('error', event.data.message);
+                    break;
+                case 'success':
+                    showNotification('success', event.data.message);
+                    break;
+            }
+        }
+    }
+
+    function startCreditsMonitoring() {
+        // Update credits every 30 seconds
+        creditsUpdateInterval = setInterval(updateCreditsDisplay, 30000);
+    }
+
+    function startConnectionMonitoring() {
+        // Check connection every 10 seconds
+        connectionCheckInterval = setInterval(checkConnection, 10000);
+    }
+
+    function updateCreditsDisplay() {
+        fetch('/api/user/credits')
+            .then(response => response.json())
+            .then(data => {
+                const creditsDisplay = document.getElementById('credits-display');
+                creditsDisplay.textContent = `${data.credits} credits`;
+                
+                // Update color based on credits remaining
+                if (data.credits < 10) {
+                    creditsDisplay.style.background = 'linear-gradient(135deg, var(--danger-color), #dc2626)';
+                } else if (data.credits < 50) {
+                    creditsDisplay.style.background = 'linear-gradient(135deg, var(--warning-color), #d97706)';
+                } else {
+                    creditsDisplay.style.background = 'linear-gradient(135deg, var(--success-color), #059669)';
+                }
+            })
+            .catch(error => {
+                console.error('Error updating credits:', error);
+            });
+    }
+
+    function checkConnection() {
+        fetch('/health')
+            .then(response => {
+                updateConnectionStatus(response.ok);
+            })
+            .catch(error => {
+                updateConnectionStatus(false);
+            });
+    }
+
+    function updateConnectionStatus(connected) {
+        const statusIndicator = document.getElementById('connection-status');
+        const statusText = document.getElementById('connection-text');
+        
+        if (connected) {
+            statusIndicator.classList.remove('disconnected');
+            statusText.textContent = 'Connected';
+        } else {
+            statusIndicator.classList.add('disconnected');
+            statusText.textContent = 'Disconnected';
+        }
+    }
+
+    function refreshChat() {
+        const iframe = document.getElementById('chainlit-frame');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        loadingOverlay.style.display = 'flex';
+        iframe.src = iframe.src; // Reload iframe
+    }
+
+    function showNotification(type, message) {
+        // Create and show a toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+
+    // Send user context to Chainlit when iframe loads
+    function sendUserContext() {
+        const iframe = document.getElementById('chainlit-frame');
+        const userContext = {
+            type: 'user_context',
+            data: userData
+        };
+        
+        if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage(userContext, '*');
+        }
+    }
+
+    // Clean up intervals when page unloads
+    window.addEventListener('beforeunload', function() {
+        if (creditsUpdateInterval) clearInterval(creditsUpdateInterval);
+        if (connectionCheckInterval) clearInterval(connectionCheckInterval);
+    });
+</script>
+{% endblock %} 

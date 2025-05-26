@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Register - AI Chat Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <!-- Left side - Registration Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-5">
+                    <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="mt-3 mb-2">Create Account</h2>
+                    <p class="text-muted">Join our AI chat platform today</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-4">
+                        <form method="POST" id="registerForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Choose a username" required minlength="3">
+                                </div>
+                                <div class="form-text">At least 3 characters</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="Enter your email" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Create a password" required minlength="6">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="password-toggle"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">At least 6 characters</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                                           placeholder="Confirm your password" required>
+                                </div>
+                                <div class="invalid-feedback" id="passwordMismatch">
+                                    Passwords do not match
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" class="text-primary">Terms of Service</a> 
+                                        and <a href="#" class="text-primary">Privacy Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </form>
+
+                        <div class="text-center">
+                            <p class="mb-0">Already have an account? 
+                                <a href="{{ url_for('auth.login') }}" class="text-primary text-decoration-none">
+                                    Sign in here
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Info -->
+                <div class="card mt-4">
+                    <div class="card-body p-3">
+                        <h6 class="card-title">
+                            <i class="fas fa-gift text-success me-2"></i>Free Starter Plan
+                        </h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li><i class="fas fa-check text-success me-2"></i>100 free credits</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Access to basic AI agents</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Standard support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Benefits -->
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center" 
+             style="background: linear-gradient(135deg, #10b981, #059669);">
+            <div class="text-white text-center p-5">
+                <h1 class="display-4 mb-4">Join Thousands of Users</h1>
+                <p class="lead mb-5">Start your AI conversation journey with our powerful platform</p>
+                
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-rocket fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Quick Setup</h5>
+                                <p class="mb-0 opacity-75">Get started in minutes with our simple registration process</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-users fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Growing Community</h5>
+                                <p class="mb-0 opacity-75">Join a vibrant community of AI enthusiasts and professionals</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Continuous Improvement</h5>
+                                <p class="mb-0 opacity-75">Regular updates and new features based on user feedback</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('password-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const passwordMismatch = document.getElementById('passwordMismatch');
+
+        function validatePasswords() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Passwords do not match');
+                confirmPassword.classList.add('is-invalid');
+                passwordMismatch.style.display = 'block';
+            } else {
+                confirmPassword.setCustomValidity('');
+                confirmPassword.classList.remove('is-invalid');
+                passwordMismatch.style.display = 'none';
+            }
+        }
+
+        password.addEventListener('input', validatePasswords);
+        confirmPassword.addEventListener('input', validatePasswords);
+
+        form.addEventListener('submit', function(e) {
+            validatePasswords();
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Auto-focus username field
+        document.getElementById('username').focus();
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Login - AI Chat Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <!-- Left side - Login Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-5">
+                    <i class="fas fa-comments text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="mt-3 mb-2">Welcome Back</h2>
+                    <p class="text-muted">Sign in to continue your AI conversations</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Enter your username" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="password-toggle"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </form>
+
+                        <div class="text-center">
+                            <p class="mb-0">Don't have an account? 
+                                <a href="{{ url_for('auth.register') }}" class="text-primary text-decoration-none">
+                                    Sign up here
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Account Info -->
+                <div class="alert alert-info mt-4" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>Demo Account
+                    </h6>
+                    <p class="mb-0">
+                        <strong>Username:</strong> demo<br>
+                        <strong>Password:</strong> demo123
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Feature Showcase -->
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center" 
+             style="background: linear-gradient(135deg, var(--primary-color), #3b82f6);">
+            <div class="text-white text-center p-5">
+                <h1 class="display-4 mb-4">AI-Powered Conversations</h1>
+                <p class="lead mb-5">Experience the future of communication with our advanced AI chat platform</p>
+                
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-robot fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Multi-Agent System</h5>
+                                <p class="mb-0 opacity-75">Interact with specialized AI agents for different scenarios</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-brain fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Intelligent Responses</h5>
+                                <p class="mb-0 opacity-75">Get contextual and meaningful responses powered by advanced AI</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shield-alt fa-2x opacity-75"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Secure & Private</h5>
+                                <p class="mb-0 opacity-75">Your conversations are protected with enterprise-grade security</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('password-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    // Auto-focus username field
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('username').focus();
+    });
+</script>
+{% endblock %} 
