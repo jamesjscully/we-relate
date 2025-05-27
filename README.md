@@ -1,305 +1,235 @@
-# Flask + Chainlit/Langroid AI Chat Platform
+# We-Relate: De-escalation Coach Platform
 
-A modern, scalable AI chat platform built with Flask and Chainlit, featuring user authentication, billing, and multiple AI agents.
+**Practice intentional dialogue for peace, function, and closeness in relationships**
 
-## 🏗️ Architecture Overview
+We-Relate is an AI-powered de-escalation coach that helps people practice difficult conversations in a safe environment. Using a sophisticated 3-agent system, users can practice with realistic personas while receiving expert coaching feedback.
 
-This application uses a microservices architecture with two main components:
+## 🎯 How It Works
 
-### 1. **Flask App** (Port 5000)
-- **Purpose**: User management, authentication, billing, and web interface
-- **Features**:
-  - User registration and login
-  - Session management with Redis support
-  - Credit-based billing system
-  - Subscription management
-  - Modern responsive UI
-  - API endpoints for Chainlit integration
+1. **Setup Phase**: Tell us about your relationship situation and conflict scenario
+2. **Practice Phase**: Have a realistic conversation with an AI persona representing the person you're in conflict with
+3. **Coaching Phase**: Receive real-time expert feedback on your de-escalation techniques
 
-### 2. **Chainlit Service** (Port 8000)
-- **Purpose**: AI chat interface and agent management
-- **Features**:
-  - Multiple AI agents (Teacher, Student, General)
-  - Real-time chat interface
-  - OpenAI integration
-  - Credit tracking and deduction
-  - Conversation history
-  - Command system
+## 🏗️ Architecture
+
+### Simple Two-Agent System
+- **Teacher Agent**: Asks educational questions and provides feedback
+- **Student Agent**: Answers questions and engages in learning dialogue
+- **User**: Can observe the conversation or interact with either agent
+
+### Technology Stack
+- **Frontend**: Flask web application with modern UI
+- **Chat Interface**: Chainlit 2.5.5 for conversational AI
+- **Backend**: Python with Poetry dependency management
+- **AI**: OpenAI GPT-3.5-turbo for natural language processing
+- **Deployment**: Docker-ready with multi-service architecture
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
-- Redis (optional, for session sharing)
+- Python 3.12.8 (managed via pyenv)
+- Poetry for dependency management
 - OpenAI API key
 
-### 1. Clone and Setup
+### Installation
+
+1. **Clone the repository**
 ```bash
 git clone <repository-url>
 cd we-relate
-python setup.py
 ```
 
-### 2. Configure Environment Variables
-Update the generated `.env` files:
-
-**flask-app/.env:**
-```env
-SECRET_KEY=your-secret-key-here
-OPENAI_API_KEY=your-openai-api-key
-CHAINLIT_SERVICE_URL=http://localhost:8000
-REDIS_URL=redis://localhost:6379
-```
-
-**chainlit-service/.env:**
-```env
-OPENAI_API_KEY=your-openai-api-key-here
-FLASK_SERVICE_URL=http://localhost:5000
-REDIS_URL=redis://localhost:6379
-```
-
-### 3. Start the Services
-
-**Option 1: Docker Compose (Recommended)**
+2. **Set up Python 3.12.8 with pyenv**
 ```bash
-docker-compose up --build
+# Install pyenv if not already installed
+curl https://pyenv.run | bash
+
+# Install Python 3.12.8
+pyenv install 3.12.8
+pyenv local 3.12.8
 ```
 
-**Option 2: Manual Start**
+3. **Install dependencies with Poetry**
 ```bash
-# Terminal 1 - Flask App
+# Install Poetry if not already installed
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install project dependencies
+poetry install
+```
+
+4. **Configure environment variables**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your OpenAI API key
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+5. **Run the application**
+```bash
+# Start Flask app (port 5000)
 cd flask-app
-python app.py
+poetry run python app.py
 
-# Terminal 2 - Chainlit Service
+# Start Chainlit service (port 8000) - in another terminal
 cd chainlit-service
-chainlit run app.py --host 0.0.0.0 --port 8000
+poetry run chainlit run app.py --port 8000
 ```
 
-### 4. Access the Application
-- **Web Interface**: http://localhost:5000
-- **Demo User**: username=`demo`, password=`demo123`
+6. **Access the application**
+- Main app: http://localhost:5000
+- Direct chat: http://localhost:8000
 
-## 📁 Project Structure
+## 🎭 Features
 
+### For Users
+- **Realistic Practice**: AI personas that respond authentically to your communication style
+- **Expert Coaching**: Real-time feedback on de-escalation techniques
+- **Safe Environment**: Practice difficult conversations without real-world consequences
+- **Progress Tracking**: Monitor your communication effectiveness over time
+
+### For Developers
+- **Modern Architecture**: Clean separation between web app and chat interface
+- **Poetry Management**: Reliable dependency management and virtual environments
+- **Extensible Design**: Easy to add new agents or modify existing behavior
+- **Docker Ready**: Containerized deployment for production environments
+
+## 🔧 Development
+
+### Project Structure
 ```
 we-relate/
-├── flask-app/                 # Flask web application
-│   ├── auth/                  # Authentication module
-│   │   ├── __init__.py
-│   │   ├── auth.py           # Auth routes
-│   │   ├── models.py         # User models
-│   │   └── decorators.py     # Auth decorators
-│   ├── billing/              # Billing module
-│   │   ├── __init__.py
-│   │   ├── billing.py        # Billing routes
-│   │   ├── models.py         # Subscription models
-│   │   └── stripe_integration.py
-│   ├── static/               # Static assets
-│   │   └── css/style.css
-│   ├── templates/            # HTML templates
-│   │   ├── base.html
-│   │   ├── login.html
-│   │   ├── register.html
-│   │   ├── chat.html
-│   │   ├── billing.html
-│   │   └── settings.html
-│   ├── app.py               # Main Flask application
-│   ├── config.py            # Configuration
-│   └── requirements.txt
-├── chainlit-service/         # Chainlit AI service
-│   ├── agents/              # AI agent implementations
-│   │   ├── __init__.py
-│   │   ├── teacher.py       # Teacher agent
-│   │   └── student.py       # Student agent
-│   ├── app.py              # Main Chainlit application
-│   ├── config.py           # Configuration
-│   └── requirements.txt
-├── docker-compose.yml       # Docker orchestration
-├── deploy.sh               # Deployment script
-├── setup.py               # Setup script
-└── README.md
+├── flask-app/              # Main web application
+│   ├── templates/          # HTML templates
+│   ├── static/            # CSS, JS, images
+│   └── app.py             # Flask application
+├── chainlit-service/       # Chat interface service
+│   ├── agents/            # AI agent implementations
+│   │   ├── setup_agent.py    # Scenario setup
+│   │   ├── persona_agent.py  # Roleplay persona
+│   │   └── coach_agent.py    # Coaching feedback
+│   ├── config.py          # Configuration management
+│   └── app.py             # Chainlit application
+├── pyproject.toml         # Poetry configuration
+└── README.md              # This file
 ```
 
-## 🎯 Features
+### Adding New Features
 
-### User Management
-- **Registration/Login**: Secure user authentication
-- **Session Management**: Redis-backed sessions for scalability
-- **User Tiers**: Free, Premium, Admin tiers with different privileges
-- **Credit System**: Pay-per-use credit system
+#### Adding New Agent Types
+To add new agent types for different scenarios:
 
-### AI Chat Interface
-- **Multiple Agents**: Switch between Teacher, Student, and General agents
-- **Real-time Chat**: Powered by Chainlit for smooth UX
-- **Conversation History**: Persistent chat history
-- **Commands**: Built-in commands for agent switching and utilities
-
-### Billing & Subscriptions
-- **Credit Tracking**: Real-time credit deduction
-- **Subscription Management**: Upgrade/downgrade plans
-- **Payment Integration**: Stripe-ready (placeholder implementation)
-
-### Technical Features
-- **Microservices**: Loosely coupled services
-- **API Integration**: RESTful APIs between services
-- **Responsive Design**: Modern, mobile-friendly UI
-- **Docker Support**: Easy deployment with Docker
-- **Configuration Management**: Environment-based config
-
-## 🔧 Configuration
-
-### Flask App Configuration
+1. **Create agent classes** in `chainlit-service/app.py`
 ```python
-# config.py
-class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    CHAINLIT_SERVICE_URL = os.environ.get('CHAINLIT_SERVICE_URL')
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    REDIS_URL = os.environ.get('REDIS_URL')
+class CustomAgent(Agent):
+    def __init__(self, name: str, specialty: str):
+        system_message = f"You are a {specialty} specialist..."
+        super().__init__(name, system_message)
 ```
 
-### Chainlit Service Configuration
+2. **Implement conversation flows**
 ```python
-# config.py
-class Config:
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
-    FLASK_SERVICE_URL = os.environ.get('FLASK_SERVICE_URL')
-    MAX_CONVERSATION_HISTORY = 50
+class MultiAgentChat:
+    def __init__(self, agent_types: List[str]):
+        self.agents = [self.create_agent(t) for t in agent_types]
 ```
 
-## 🤖 AI Agents
+#### Customizing Personas
+Modify `chainlit-service/agents/persona_agent.py` to:
+- Add new personality types
+- Implement different conflict scenarios
+- Adjust emotional response patterns
 
-### Teacher Agent
-- Educational support and explanations
-- Structured learning guidance
-- Concept clarification
+#### Enhancing Coaching
+Update `chainlit-service/agents/coach_agent.py` to:
+- Add new de-escalation techniques
+- Implement scoring algorithms
+- Create personalized learning paths
 
-### Student Agent
-- Learning companion
-- Study assistance
-- Problem-solving help
-
-### General Agent
-- General-purpose AI assistant
-- Wide variety of tasks
-- Conversational AI
-
-## 💳 Billing System
-
-### Credit System
-- **Free Tier**: 100 credits
-- **Premium Tier**: 500 credits
-- **Credit Cost**: 1 credit per message
-
-### Subscription Tiers
-- **Free**: Limited credits, basic features
-- **Premium**: More credits, advanced features
-- **Admin**: Unlimited access, admin features
-
-## 🔌 API Endpoints
-
-### Flask App APIs
-```
-GET  /                          # Main chat interface
-POST /auth/login               # User login
-POST /auth/register            # User registration
-GET  /auth/logout              # User logout
-GET  /billing                  # Billing dashboard
-POST /billing/upgrade          # Upgrade subscription
-GET  /api/user/credits         # Get user credits
-POST /api/user/update-credits  # Update credits
-```
-
-### Chainlit Service
-```
-WebSocket /                    # Chat interface
-GET  /health                   # Health check
-```
-
-## 🚀 Deployment
-
-### Docker Deployment
+### Running Tests
 ```bash
-# Build and start all services
+poetry run pytest
+```
+
+### Code Quality
+```bash
+# Format code
+poetry run black .
+
+# Lint code  
+poetry run flake8
+
+# Type checking
+poetry run mypy .
+```
+
+## 🐳 Docker Deployment
+
+```bash
+# Build and run with Docker Compose
 docker-compose up --build
 
-# Scale services
-docker-compose up --scale chainlit-service=2
-
-# Production deployment
-docker-compose -f docker-compose.prod.yml up -d
+# Access the application
+# Main app: http://localhost:5000
+# Chat service: http://localhost:8000
 ```
 
-### Manual Deployment
-```bash
-# Deploy to production
-./deploy.sh production
+## 🔐 Environment Variables
 
-# Deploy to staging
-./deploy.sh staging
-```
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API key for GPT-4 | Yes |
+| `SECRET_KEY` | Flask secret key | Yes |
+| `DATABASE_URL` | Database connection string | No |
+| `DEBUG` | Enable debug mode | No |
 
-## 🔒 Security Features
+## 📊 Subscription Tiers
 
-- **Password Hashing**: Werkzeug security
-- **Session Security**: Secure cookies, CSRF protection
-- **API Authentication**: Session-based auth
-- **Environment Variables**: Sensitive data protection
-- **CORS Configuration**: Controlled cross-origin requests
+### Free Tier
+- 10 practice sessions per month
+- Basic coaching feedback
+- Standard personas
 
-## 🧪 Testing
+### Pro Tier ($9.99/month)
+- Unlimited practice sessions
+- Advanced coaching analytics
+- Custom persona creation
+- Progress tracking
 
-```bash
-# Run Flask app tests
-cd flask-app
-python -m pytest tests/
-
-# Run Chainlit service tests
-cd chainlit-service
-python -m pytest tests/
-```
-
-## 📊 Monitoring
-
-### Health Checks
-- Flask: `GET /health`
-- Chainlit: WebSocket connection status
-- Redis: Connection monitoring
-
-### Logging
-- Application logs
-- Error tracking
-- Performance monitoring
+### Enterprise Tier (Custom)
+- Team management
+- Custom integrations
+- Advanced analytics
+- Priority support
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-- **Documentation**: Check this README and code comments
-- **Issues**: Create GitHub issues for bugs
-- **Discussions**: Use GitHub discussions for questions
+- **Documentation**: [docs.we-relate.com](https://docs.we-relate.com)
+- **Issues**: [GitHub Issues](https://github.com/your-org/we-relate/issues)
+- **Email**: support@we-relate.com
+- **Discord**: [Join our community](https://discord.gg/we-relate)
 
-## 🔮 Roadmap
+## 🙏 Acknowledgments
 
-- [ ] Stripe payment integration
-- [ ] Advanced AI agent capabilities
-- [ ] Real-time collaboration
-- [ ] Mobile app
-- [ ] Advanced analytics
-- [ ] Multi-language support
+- OpenAI for GPT-4 language model
+- Chainlit for conversational AI framework
+- Poetry for dependency management
+- The open-source community for inspiration and tools
 
 ---
 
-**Built with ❤️ using Flask, Chainlit, and OpenAI**
+**Built with ❤️ for better relationships and peaceful communication**

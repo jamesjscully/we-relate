@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script for Flask + Chainlit/Langroid Architecture
+Setup script for Flask + Chainlit Architecture
 This script helps initialize the application with proper configuration.
 """
 
@@ -37,7 +37,7 @@ def install_dependencies(service_dir):
 
 def main():
     """Main setup function"""
-    print("🚀 Setting up Flask + Chainlit/Langroid Architecture")
+    print("🚀 Setting up Flask + Chainlit Architecture")
     print("=" * 50)
     
     # Flask app environment

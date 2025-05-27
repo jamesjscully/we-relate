@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "we-relate"
+version = "0.1.0"
+description = "We-Relate: De-escalation Coach Platform - Practice intentional dialogue for peace, function, and closeness in relationships"
+authors = ["We-Relate Team"]
+readme = "README.md"
+packages = [{include = "flask-app"}, {include = "chainlit-service"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+chainlit = "^2.5.5"
+openai = ">=1.61.1"
+python-dotenv = ">=1.1.0"
+pydantic = ">=2.0.0"
+flask = "^3.0.0"
+flask-login = "^0.6.0"
+flask-sqlalchemy = "^3.1.0"
+flask-cors = "^4.0.0"
+werkzeug = "^3.0.0"
+pyjwt = "2.8.0"
+requests = "2.31.0"
+gunicorn = "^21.2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^24.0.0"
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+flask-app = "flask-app.app:main"
+chainlit-service = "chainlit-service.app:main" 

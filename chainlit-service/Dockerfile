@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -16,12 +16,24 @@ RUN apt-get update \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+# Configure Poetry: Don't create virtual environment, install dependencies globally
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VENV_IN_PROJECT=0 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Copy Poetry configuration files
+COPY pyproject.toml poetry.lock ./
+
+# Install dependencies globally
+RUN poetry config virtualenvs.create false && \
+    poetry install --only=main --no-root && \
+    rm -rf $POETRY_CACHE_DIR
 
 # Copy project
-COPY . .
+COPY chainlit-service/ .
 
 # Expose port
 EXPOSE $PORT
@@ -30,5 +42,5 @@ EXPOSE $PORT
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:$PORT/ || exit 1
 
-# Run the application
+# Run the application using chainlit directly since dependencies are installed globally
 CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "8080", "--headless"] 

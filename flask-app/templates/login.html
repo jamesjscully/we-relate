@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Login - AI Chat Platform{% endblock %}
+{% block title %}Sign In - We-Relate{% endblock %}
 
 {% block content %}
 <div class="container-fluid vh-100">
@@ -9,22 +9,38 @@
         <div class="col-lg-6 d-flex align-items-center justify-content-center">
             <div class="w-100" style="max-width: 400px;">
                 <div class="text-center mb-5">
-                    <i class="fas fa-comments text-primary" style="font-size: 3rem;"></i>
+                    <i class="fas fa-heart text-primary" style="font-size: 3rem;"></i>
                     <h2 class="mt-3 mb-2">Welcome Back</h2>
-                    <p class="text-muted">Sign in to continue your AI conversations</p>
+                    <p class="text-muted">Continue practicing intentional dialogue</p>
                 </div>
 
                 <div class="card">
                     <div class="card-body p-4">
+                        <!-- Google Sign In Button -->
+                        <button type="button" class="btn btn-outline-primary w-100 mb-3" onclick="signInWithGoogle()">
+                            <svg class="me-2" width="18" height="18" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Continue with Google
+                        </button>
+
+                        <!-- Divider -->
+                        <div class="text-center my-3">
+                            <span class="text-muted">or</span>
+                        </div>
+
                         <form method="POST">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label">Email</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
+                                        <i class="fas fa-envelope"></i>
                                     </span>
-                                    <input type="text" class="form-control" id="username" name="username" 
-                                           placeholder="Enter your username" required>
+                                    <input type="email" class="form-control" id="username" name="username" 
+                                           placeholder="Enter your email" required>
                                 </div>
                             </div>
 
@@ -49,7 +65,7 @@
 
                         <div class="text-center">
                             <p class="mb-0">Don't have an account? 
-                                <a href="{{ url_for('auth.register') }}" class="text-primary text-decoration-none">
+                                <a href="{{ url_for('index') }}" class="text-primary text-decoration-none">
                                     Sign up here
                                 </a>
                             </p>
@@ -63,7 +79,7 @@
                         <i class="fas fa-info-circle me-2"></i>Demo Account
                     </h6>
                     <p class="mb-0">
-                        <strong>Username:</strong> demo<br>
+                        <strong>Email:</strong> demo@example.com<br>
                         <strong>Password:</strong> demo123
                     </p>
                 </div>
@@ -74,18 +90,18 @@
         <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center" 
              style="background: linear-gradient(135deg, var(--primary-color), #3b82f6);">
             <div class="text-white text-center p-5">
-                <h1 class="display-4 mb-4">AI-Powered Conversations</h1>
-                <p class="lead mb-5">Experience the future of communication with our advanced AI chat platform</p>
+                <h1 class="display-4 mb-4">Transform Your Relationships</h1>
+                <p class="lead mb-5">Practice de-escalation and build stronger connections through intentional dialogue</p>
                 
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="d-flex align-items-center text-start">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-robot fa-2x opacity-75"></i>
+                                <i class="fas fa-user-friends fa-2x opacity-75"></i>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h5>Multi-Agent System</h5>
-                                <p class="mb-0 opacity-75">Interact with specialized AI agents for different scenarios</p>
+                                <h5>Realistic Simulations</h5>
+                                <p class="mb-0 opacity-75">Practice with AI that understands your specific relationships</p>
                             </div>
                         </div>
                     </div>
@@ -96,8 +112,8 @@
                                 <i class="fas fa-brain fa-2x opacity-75"></i>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h5>Intelligent Responses</h5>
-                                <p class="mb-0 opacity-75">Get contextual and meaningful responses powered by advanced AI</p>
+                                <h5>Expert Coaching</h5>
+                                <p class="mb-0 opacity-75">Learn proven de-escalation techniques and communication strategies</p>
                             </div>
                         </div>
                     </div>
@@ -105,11 +121,11 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center text-start">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-shield-alt fa-2x opacity-75"></i>
+                                <i class="fas fa-chart-line fa-2x opacity-75"></i>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h5>Secure & Private</h5>
-                                <p class="mb-0 opacity-75">Your conversations are protected with enterprise-grade security</p>
+                                <h5>Track Progress</h5>
+                                <p class="mb-0 opacity-75">Monitor your communication skills and relationship improvements</p>
                             </div>
                         </div>
                     </div>
@@ -141,5 +157,45 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('username').focus();
     });
+
+    // Google Sign-In
+    function signInWithGoogle() {
+        // Initialize Google Sign-In
+        google.accounts.id.initialize({
+            client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+            callback: handleGoogleSignIn
+        });
+        
+        // Prompt the user to sign in
+        google.accounts.id.prompt();
+    }
+
+    function handleGoogleSignIn(response) {
+        // Send the ID token to your server for verification
+        fetch('/auth/google-signin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                credential: response.credential
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/';
+            } else {
+                alert('Google sign-in failed. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during sign-in. Please try again.');
+        });
+    }
 </script>
+
+<!-- Google Sign-In Script -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 {% endblock %} 

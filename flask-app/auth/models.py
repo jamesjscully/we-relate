@@ -70,6 +70,22 @@ class User:
             return cls(*row)
         return None
     
+    @classmethod
+    def get_by_email(cls, email: str) -> Optional['User']:
+        """Get user by email"""
+        conn = sqlite3.connect('app.db')
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT id, username, email, password_hash, tier, credits, created_at FROM users WHERE email = ?',
+            (email,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            return cls(*row)
+        return None
+    
     def check_password(self, password: str) -> bool:
         """Check if provided password matches user's password"""
         return check_password_hash(self.password_hash, password)

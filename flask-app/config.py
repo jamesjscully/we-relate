@@ -9,7 +9,6 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     CHAINLIT_SERVICE_URL = os.environ.get('CHAINLIT_SERVICE_URL', 'http://localhost:8000')
     DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
-    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
     
     # Flask settings
     FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
@@ -23,16 +22,18 @@ class Config:
     # CORS settings
     CORS_ORIGINS = ['*'] if FLASK_ENV == 'development' else [CHAINLIT_SERVICE_URL]
 
+class ProductionConfig(Config):
+    """Production configuration for Cloud Run"""
+    DEBUG = False
+    TESTING = False
+    SESSION_COOKIE_SECURE = True
+    # For Cloud Run, we'll use SQLite stored in /tmp or a mounted volume
+    # You can upgrade to Cloud SQL later if needed
+
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     TESTING = False
-
-class ProductionConfig(Config):
-    """Production configuration"""
-    DEBUG = False
-    TESTING = False
-    SESSION_COOKIE_SECURE = True
 
 class TestingConfig(Config):
     """Testing configuration"""

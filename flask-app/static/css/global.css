@@ -1,0 +1,175 @@
+/* We-Relate Global Design System */
+/* This file is shared between Flask and Chainlit services */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+    /* Global Design System - Shared with Chainlit */
+    --primary-color: #6366f1;
+    --primary-hover: #5b21b6;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --dark-color: #0f172a;
+    --light-color: #ffffff;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    
+    /* Typography */
+    --font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Spacing */
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 16px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Global Typography */
+* {
+    font-family: var(--font-family);
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--gray-50);
+    color: var(--gray-900);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.6;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--font-weight-bold);
+    color: var(--gray-900);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: var(--border-radius-sm);
+    font-weight: var(--font-weight-medium);
+    transition: all 0.2s ease;
+    font-family: var(--font-family);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-300);
+    transition: all 0.2s ease;
+    font-weight: var(--font-weight-normal);
+    font-family: var(--font-family);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    background-color: var(--light-color);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: var(--border-radius-sm);
+    border: none;
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family);
+}
+
+/* Chainlit Specific Overrides */
+.chainlit-container {
+    font-family: var(--font-family) !important;
+}
+
+.chainlit-container * {
+    font-family: var(--font-family) !important;
+}
+
+/* Message bubbles */
+.message-bubble {
+    border-radius: var(--border-radius) !important;
+    font-family: var(--font-family) !important;
+}
+
+/* Input field */
+.chainlit-input {
+    border-radius: var(--border-radius-sm) !important;
+    border: 1px solid var(--gray-300) !important;
+    font-family: var(--font-family) !important;
+}
+
+.chainlit-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Send button */
+.chainlit-send-button {
+    background-color: var(--primary-color) !important;
+    border-radius: var(--border-radius-sm) !important;
+    font-family: var(--font-family) !important;
+}
+
+.chainlit-send-button:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+/* Utility Classes */
+.text-primary { color: var(--primary-color) !important; }
+.text-secondary { color: var(--secondary-color) !important; }
+.text-success { color: var(--success-color) !important; }
+.text-danger { color: var(--danger-color) !important; }
+.text-warning { color: var(--warning-color) !important; }
+
+.bg-primary { background-color: var(--primary-color) !important; }
+.bg-light { background-color: var(--light-color) !important; }
+.bg-gray-50 { background-color: var(--gray-50) !important; }
+.bg-gray-100 { background-color: var(--gray-100) !important; }
+
+.border-radius { border-radius: var(--border-radius) !important; }
+.border-radius-sm { border-radius: var(--border-radius-sm) !important; }
+.border-radius-lg { border-radius: var(--border-radius-lg) !important; }
+
+.shadow { box-shadow: var(--shadow) !important; }
+.shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.shadow-md { box-shadow: var(--shadow-md) !important; }
+.shadow-lg { box-shadow: var(--shadow-lg) !important; } 

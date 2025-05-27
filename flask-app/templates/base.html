@@ -3,99 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Chat Platform{% endblock %}</title>
+    <title>{% block title %}We-Relate{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Global Design System -->
+    <link href="{{ url_for('static', filename='css/global.css') }}" rel="stylesheet">
     
     <style>
         :root {
-            --primary-color: #2563eb;
+            /* Global Design System - Shared with Chainlit */
+            --primary-color: #6366f1;
+            --primary-hover: #5b21b6;
             --secondary-color: #64748b;
             --success-color: #10b981;
             --danger-color: #ef4444;
             --warning-color: #f59e0b;
-            --dark-color: #1e293b;
-            --light-color: #f8fafc;
+            --dark-color: #0f172a;
+            --light-color: #ffffff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Typography */
+            --font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            /* Spacing */
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            font-family: var(--font-family);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
+            font-family: var(--font-family);
+            background-color: var(--gray-50);
+            color: var(--gray-900);
+            font-weight: var(--font-weight-normal);
         }
 
         .navbar-custom {
-            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--light-color);
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1000;
         }
 
         .navbar-brand {
-            font-weight: 700;
+            font-weight: var(--font-weight-bold);
             font-size: 1.5rem;
+            color: var(--gray-900) !important;
+            letter-spacing: -0.025em;
         }
 
+        /* Navigation Styles */
+        .user-menu {
+            display: flex !important;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease;
+            color: var(--gray-700) !important;
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .user-menu:hover {
+            background-color: var(--gray-100);
+            color: var(--gray-900) !important;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            font-size: 0.875rem;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .dropdown-menu {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            z-index: 9999 !important;
+        }
+
+        .dropdown-item {
+            border-radius: var(--border-radius-sm);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        /* Button Styles */
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            transition: all 0.3s ease;
+            border-radius: var(--border-radius-sm);
+            font-weight: var(--font-weight-medium);
+            transition: all 0.2s ease;
         }
 
         .btn-primary:hover {
-            background-color: #1d4ed8;
-            border-color: #1d4ed8;
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
             transform: translateY(-1px);
         }
 
+        /* Card Styles */
         .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             transition: all 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            box-shadow: var(--shadow-lg);
         }
 
+        /* Form Styles */
         .form-control {
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--gray-300);
+            transition: all 0.2s ease;
+            font-weight: var(--font-weight-normal);
         }
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
+        /* Alert Styles */
         .alert {
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             border: none;
+            font-weight: var(--font-weight-medium);
         }
-
-        .credits-badge {
-            background: linear-gradient(135deg, var(--success-color), #059669);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .tier-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .tier-free { background-color: #e2e8f0; color: #475569; }
-        .tier-premium { background-color: #fbbf24; color: #92400e; }
-        .tier-enterprise { background-color: #8b5cf6; color: white; }
 
         .footer {
             background-color: var(--dark-color);
@@ -119,44 +213,26 @@
 </head>
 <body class="min-vh-100">
     {% if session.user_id %}
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid px-4">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-comments me-2"></i>AI Chat Platform
+                We-Relate
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
-                            <i class="fas fa-home me-1"></i>Chat
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('billing') }}">
-                            <i class="fas fa-credit-card me-1"></i>Billing
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('settings') }}">
-                            <i class="fas fa-cog me-1"></i>Settings
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>{{ session.username }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('settings') }}">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle user-menu" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">
+                            {{ session.username[0].upper() }}
+                        </div>
+                        <span class="user-name">{{ session.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                        </a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -184,11 +260,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5>AI Chat Platform</h5>
-                    <p class="text-muted">Powered by advanced AI technology for meaningful conversations.</p>
+                    <h5>We-Relate</h5>
+                    <p class="text-muted">Practice intentional dialogue for peace, function, and closeness in your relationships.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted">&copy; 2024 AI Chat Platform. All rights reserved.</p>
+                    <p class="text-muted">&copy; 2024 We-Relate. All rights reserved.</p>
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register - AI Chat Platform{% endblock %}
+{% block title %}Join We-Relate{% endblock %}
 
 {% block content %}
 <div class="container-fluid vh-100">
@@ -9,26 +9,39 @@
         <div class="col-lg-6 d-flex align-items-center justify-content-center">
             <div class="w-100" style="max-width: 400px;">
                 <div class="text-center mb-5">
-                    <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
-                    <h2 class="mt-3 mb-2">Create Account</h2>
-                    <p class="text-muted">Join our AI chat platform today</p>
+                    <div style="font-size: 2rem; font-weight: 700; color: #667eea; margin-bottom: 1.5rem;">We-Relate</div>
+                    <h1 style="font-size: 1.5rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem; line-height: 1.3;">
+                        Your conflict navigation coach.
+                    </h1>
+                    <h2 style="font-size: 1.2rem; font-weight: 500; color: #1a1a1a; margin-bottom: 1rem; line-height: 1.3;">
+                        Practice difficult conversations.
+                    </h2>
+                    <h2 style="font-size: 1.2rem; font-weight: 500; color: #1a1a1a; margin-bottom: 1rem; line-height: 1.3;">
+                        Invest in your relationships today.
+                    </h2>
+                    <div style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 1rem 0;">3 free sessions</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 1rem 0;">$12/month</div>
                 </div>
+                <!-- Pricing Info -->
 
                 <div class="card">
                     <div class="card-body p-4">
-                        <form method="POST" id="registerForm">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input type="text" class="form-control" id="username" name="username" 
-                                           placeholder="Choose a username" required minlength="3">
-                                </div>
-                                <div class="form-text">At least 3 characters</div>
-                            </div>
+                        <!-- Google Sign Up Button -->
+                        <button type="button" class="btn btn-outline-primary w-100 mb-3" onclick="signInWithGoogle()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Continue with Google
+                        </button>
+                        
+                        <div class="text-center mb-3" style="color: #6c757d; font-size: 0.9rem;">
+                            or sign up with email
+                        </div>
 
+                        <form method="POST" action="{{ url_for('index') }}" id="registerForm">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <div class="input-group">
@@ -39,7 +52,6 @@
                                            placeholder="Enter your email" required>
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
                                 <div class="input-group">
@@ -52,7 +64,6 @@
                                         <i class="fas fa-eye" id="password-toggle"></i>
                                     </button>
                                 </div>
-                                <div class="form-text">At least 6 characters</div>
                             </div>
 
                             <div class="mb-4">
@@ -80,10 +91,10 @@
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 mb-3">
-                                <i class="fas fa-user-plus me-2"></i>Create Account
+                                Start Your Practice Today
                             </button>
                         </form>
-
+                        
                         <div class="text-center">
                             <p class="mb-0">Already have an account? 
                                 <a href="{{ url_for('auth.login') }}" class="text-primary text-decoration-none">
@@ -93,20 +104,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Pricing Info -->
-                <div class="card mt-4">
-                    <div class="card-body p-3">
-                        <h6 class="card-title">
-                            <i class="fas fa-gift text-success me-2"></i>Free Starter Plan
-                        </h6>
-                        <ul class="list-unstyled mb-0 small">
-                            <li><i class="fas fa-check text-success me-2"></i>100 free credits</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Access to basic AI agents</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Standard support</li>
-                        </ul>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -114,8 +111,8 @@
         <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center" 
              style="background: linear-gradient(135deg, #10b981, #059669);">
             <div class="text-white text-center p-5">
-                <h1 class="display-4 mb-4">Join Thousands of Users</h1>
-                <p class="lead mb-5">Start your AI conversation journey with our powerful platform</p>
+                <h1 class="display-4 mb-4">Transform Your Relationships</h1>
+                <p class="lead mb-5">Join people building stronger connections through intentional dialogue practice</p>
                 
                 <div class="row g-4">
                     <div class="col-12">
@@ -124,8 +121,8 @@
                                 <i class="fas fa-rocket fa-2x opacity-75"></i>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h5>Quick Setup</h5>
-                                <p class="mb-0 opacity-75">Get started in minutes with our simple registration process</p>
+                                <h5>Start Immediately</h5>
+                                <p class="mb-0 opacity-75">Begin practicing difficult conversations right after signup</p>
                             </div>
                         </div>
                     </div>
@@ -208,8 +205,48 @@
             form.classList.add('was-validated');
         });
 
-        // Auto-focus username field
-        document.getElementById('username').focus();
+        // Auto-focus email field
+        document.getElementById('email').focus();
     });
+
+    // Google Sign-In
+    function signInWithGoogle() {
+        // Initialize Google Sign-In
+        google.accounts.id.initialize({
+            client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+            callback: handleGoogleSignIn
+        });
+        
+        // Prompt the user to sign in
+        google.accounts.id.prompt();
+    }
+
+    function handleGoogleSignIn(response) {
+        // Send the ID token to your server for verification
+        fetch('/auth/google-signin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                credential: response.credential
+            })
+        })
+        .then(response => response.json())
+                    .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    alert('Google sign-in failed. Please try again.');
+                }
+            })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during sign-in. Please try again.');
+        });
+    }
 </script>
+
+<!-- Google Sign-In Script -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 {% endblock %} 

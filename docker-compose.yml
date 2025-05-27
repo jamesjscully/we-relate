@@ -1,45 +1,32 @@
 services:
   flask-app:
-    build: ./flask-app
+    build:
+      context: .
+      dockerfile: ./flask-app/Dockerfile
     ports:
       - "5000:8080"
     environment:
       - SECRET_KEY=dev-secret-key-change-in-production
-      - CHAINLIT_SERVICE_URL=http://localhost:8000
-      - DATABASE_URL=sqlite:///app.db
-      - REDIS_URL=redis://redis:6379
+      - CHAINLIT_SERVICE_URL=http://chainlit-service:8080
+      - DATABASE_PATH=/app/data/app.db
+      - FLASK_ENV=development
       - PORT=8080
     volumes:
-      - ./flask-app:/app
       - flask_data:/app/data
     depends_on:
-      - redis
       - chainlit-service
     restart: unless-stopped
 
   chainlit-service:
-    build: ./chainlit-service
+    build:
+      context: .
+      dockerfile: ./chainlit-service/Dockerfile
     ports:
       - "8000:8080"
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-api-key}
-      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PORT=8080
-    volumes:
-      - ./chainlit-service:/app
-    depends_on:
-      - redis
     restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-    command: redis-server --appendonly yes
 
 volumes:
-  flask_data:
-  redis_data: 
+  flask_data: 
