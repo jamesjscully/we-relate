@@ -3,24 +3,21 @@ from __future__ import annotations
 import os
 import openai
 import chainlit as cl
-from abc import ABC, abstractmethod
+from typing import Dict, List, Protocol
 from enum import Enum, auto
 
-from typing import Dict, List
-
-# Initialize OpenAI client
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize OpenAI async client
+client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 # ────────────── low-level chat data ─────────────────────────────────────── #
 class ChatChannel(Enum):
-    BOTH = auto()
     COACH = auto()
     PARTNER = auto()
 
 
 class ChatMessage:
-    def __init__(self, role: str, content: str, channel: ChatChannel = ChatChannel.BOTH):
+    def __init__(self, role: str, content: str, channel: ChatChannel = ChatChannel.PARTNER):
         self.role = role
         self.content = content
         self.channel = channel
@@ -31,7 +28,7 @@ class ChatHistory:
         self._log: List[ChatMessage] = []
 
     def add(self, role: str, content: str,
-            channel: ChatChannel = ChatChannel.BOTH) -> None:
+            channel: ChatChannel = ChatChannel.PARTNER) -> None:
         self._log.append(ChatMessage(role, content, channel))
 
     def full(self) -> List[Dict]:
@@ -40,71 +37,132 @@ class ChatHistory:
     def partner_view(self) -> List[Dict]:
         return [{"role": m.role, "content": m.content}
                 for m in self._log
-                if m.channel in (ChatChannel.PARTNER, ChatChannel.BOTH)]
+                if m.channel == ChatChannel.PARTNER]
 
 
 # ────────────── speakers (unchanged) ────────────────────────────────────── #
-class Speaker(ABC):
-    @abstractmethod
-    def respond(self, history: ChatHistory) -> str: ...
+class Speaker(Protocol):
+    async def respond(self, history: ChatHistory, partner_profile: str | None = None, partner_scenario: str | None = None) -> str: ...
 
 
 class Coach(Speaker):
-    MODEL = "gpt-4o-mini"
-    SYS = "You are a supportive communication coach. You see the entire chat."
+    MODEL = "gpt-4o"
+    
+    def get_sys(self, partner_profile: str | None = None, partner_scenario: str | None = None) -> str:
+        context = ""
+        if partner_profile or partner_scenario:
+            context = f"\n\nContext about the person you're coaching them to communicate with:\n"
+            if partner_profile:
+                context += f"Relationship/Profile: {partner_profile}\n"
+            if partner_scenario:
+                context += f"Current Scenario: {partner_scenario}\n"
+        
+        return (
+            f"""You are a communication coach. You are coaching the user on how to use intentional dialogue techniques to identify and validate the emotional concerns of the user's conversation partner. The partner is currently feeling very emotional, and is not able to engage in productive dialogue. Our goal is to understand and mirror their emotional experience without judgement. As the Partner calms down, you should guide the user towards a more productive dialogue.
 
-    def respond(self, history: ChatHistory) -> str:
-        msg = [{"role": "system", "content": self.SYS}] + history.full()
-        return client.chat.completions.create(model=self.MODEL,
-                                            messages=msg).choices[0].message.content
+            These are the principles of intentional dialogue:
+            Presence: Participants commit to being fully attentive—mentally and emotionally—throughout the exchange.
+            Safety and Respect: A shared commitment to nonjudgmental listening, avoiding blame or interruption, and honoring each person's experience.
+            Speaking from the "I": Communicating personal experience rather than generalizations or accusations (e.g., "I felt..." rather than "You always...").
+            Active Listening: Responding with reflection, validation, and empathy to demonstrate accurate understanding before offering one's own view.
+            Curiosity over Judgment: Prioritizing exploration of the other's perspective over defending one's own.
+            Intentional Turn-Taking: Structured exchanges where speakers and listeners alternate roles, often with guided prompts, to prevent domination or escalation.
+            
+            The conversation partner cannot read what you have to say. Only the user can see your messages. 
+            Do not praise the user or tell them they did a good job.{context}"""
+        )
+
+    async def respond(self, history: ChatHistory, partner_profile: str | None = None, partner_scenario: str | None = None) -> str:
+        sys_prompt = self.get_sys(partner_profile, partner_scenario)
+        msg = [{"role": "system", "content": sys_prompt}] + history.full()
+        response = await client.chat.completions.create(model=self.MODEL,
+                                                       messages=msg)
+        return response.choices[0].message.content
 
 
 class Partner(Speaker):
-    MODEL = "gpt-3.5-turbo-0125"
-
+    MODEL = "gpt-4o"
+    
     def __init__(self) -> None:
         self.profile: str | None = None
         self.scenario: str | None = None
+        self.emotional_state: str = "neutral, but ready to react emotionally to the situation"
 
     @property
     def sys(self) -> str:
         return (
-            f"You are the user's conversation partner.\n"
-            f"Profile (relationship + diagnosis): {self.profile or 'unspecified'}.\n"
-            f"Scenario: {self.scenario or 'unspecified'}.\n"
-            "You see only messages labelled BOTH or PARTNER."
+            f""""You are roleplaying in a scenario with the user. Your job is react to the user's messages in a psychologically realistic way.
+            You are the following person:
+            Your relationship/profile: {self.profile or 'unspecified'}.
+            Current scenario: {self.scenario or 'unspecified'}. 
+            Current emotional state: {self.emotional_state}
+            Stay in character and respond.
+            """
         )
 
-    def respond(self, history: ChatHistory) -> str:
+    async def react(self, history: ChatHistory) -> str:
+        """Generate an emotional reaction to the latest user message and update emotional state"""
+        # Get the latest user message from partner view
+        partner_messages = history.partner_view()
+        if not partner_messages:
+            return self.emotional_state
+            
+        latest_user_message = partner_messages[-1]['content'] if partner_messages else ""
+        
+        # Generate emotional reaction
+        reaction_prompt = [
+            {"role": "system", "content": (
+                f"You are analyzing the emotional impact of a message in this context:\n"
+                f"Relationship: {self.profile or 'unspecified'}\n"
+                f"Scenario: {self.scenario or 'unspecified'}\n"
+                f"Current emotional state: {self.emotional_state}\n\n"
+                f"Latest message: '{latest_user_message}'\n\n"
+                f"Respond with ONLY a brief emotional state description (e.g., 'frustrated and defensive', 'hurt but trying to stay calm', 'angry and feeling unheard'). "
+                f"Consider how this message would affect someone in this situation emotionally."
+            )},
+            {"role": "user", "content": latest_user_message}
+        ]
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=reaction_prompt,
+                temperature=0.7,
+                max_tokens=50
+            )
+            new_emotional_state = response.choices[0].message.content.strip()
+            
+            self.emotional_state = new_emotional_state
+            return new_emotional_state
+        except Exception:
+            # Fallback if API call fails
+            return self.emotional_state
+
+    async def respond(self, history: ChatHistory, partner_profile: str | None = None, partner_scenario: str | None = None) -> str:
         msg = [{"role": "system", "content": self.sys}] + history.partner_view()
-        return client.chat.completions.create(model=self.MODEL,
-                                            messages=msg).choices[0].message.content
+        response = await client.chat.completions.create(model=self.MODEL,
+                                                       messages=msg)
+        return response.choices[0].message.content
 
 
 class Router:
-    MODEL = "gpt-3.5-turbo-0125"
-    SYS = ("You are a router. Examine the latest user message and reply with "
-           "COACH or PARTNER (one word).")
-
-    def route(self, history: ChatHistory) -> ChatChannel:
-        msg = [{"role": "system", "content": self.SYS}] + history.full()
-        dec = client.chat.completions.create(model=self.MODEL,
-                                           messages=msg,
-                                           temperature=0).choices[0].message.content.lower()
-        return ChatChannel.COACH if "coach" in dec else ChatChannel.PARTNER
+    """Deterministic router - checks for @coach prefix to route to coach, otherwise routes to partner"""
+    def route(self, user_message: str) -> ChatChannel:
+        """Route based on @coach prefix - deterministic, no AI needed"""
+        if user_message.strip().lower().startswith("@coach"):
+            return ChatChannel.COACH
+        return ChatChannel.PARTNER
 
 
-# ────────────── stage machine (Strategy) ────────────────────────────────── #
+# ────────────── stage machine ────────────────────────────────────── #
 class Stage(Enum):
     PROFILE = auto()
     SCENARIO = auto()
     CHAT = auto()
 
 
-class StageHandler(ABC):
-    @abstractmethod
+class StageHandler(Protocol):
     async def prompt(self) -> None: ...
-    @abstractmethod
     async def handle(self, text: str, conv: "Conversation") -> Stage: ...
 
 
@@ -112,10 +170,11 @@ class ProfileStage(StageHandler):
     async def prompt(self) -> None:
         await cl.Message(
             "Describe **relationship** to the person *and* any diagnosed mental "
-            "condition they have (one sentence).").send()
+            "condition they have (one sentence).",
+            author="💻 System").send()
 
     async def handle(self, text: str, conv: "Conversation") -> Stage:
-        conv.partner.profile = text.strip()
+        await conv.set_profile(text)
         return Stage.SCENARIO
 
 
@@ -123,13 +182,17 @@ class ScenarioStage(StageHandler):
     async def prompt(self) -> None:
         await cl.Message(
             "Briefly set the **triggering scenario** (e.g., *I came home late "
-            "and she is yelling at me.*)").send()
+            "and she is yelling at me.*)",
+            author="💻 System").send()
 
     async def handle(self, text: str, conv: "Conversation") -> Stage:
-        conv.partner.scenario = text.strip()
+        await conv.set_scenario(text)
         await cl.Message(
-            "Great—start talking as you would in the real situation. The coach "
-            "and partner will reply.").send()
+            "Perfect! Now you can start the conversation:\n\n"
+            "• **Type normally** to talk to your partner\n"
+            "• **Type `@coach`** followed by your message to get coaching advice\n\n"
+            "Start talking as you would in the real situation!",
+            author="💻 System").send()
         return Stage.CHAT
 
 
@@ -138,9 +201,11 @@ class ChatStage(StageHandler):
         ...
 
     async def handle(self, text: str, conv: "Conversation") -> Stage:
-        reply, who = conv.dialogue(text)
+        reply, who = await conv.dialogue(text)
         label = "Coach" if who is ChatChannel.COACH else "Partner"
-        await cl.Message(f"**{label}:** {reply}").send()
+        icon = "🏋️" if who is ChatChannel.COACH else "🤼"
+        await cl.Message(f"{reply}", 
+                        author=f"{icon} {label}").send()
         return Stage.CHAT  # remain here
 
 
@@ -161,11 +226,93 @@ class Conversation:
             ChatChannel.COACH: Coach(),
             ChatChannel.PARTNER: self.partner,
         }
+        # Store context from user's perspective (for coach)
+        self.user_profile: str | None = None
+        self.user_scenario: str | None = None
+        # Store context from partner's perspective (for partner roleplay)
+        self.partner_profile: str | None = None
+        self.partner_scenario: str | None = None
 
-    def dialogue(self, user_text: str) -> tuple[str, ChatChannel]:
-        self.history.add("user", user_text, ChatChannel.BOTH)
-        who = self.router.route(self.history)
-        reply = self.speakers[who].respond(self.history)
+    async def set_profile(self, user_profile: str) -> None:
+        """Set profile from user's perspective and generate partner's perspective"""
+        self.user_profile = user_profile.strip()
+        
+        # Generate partner's perspective
+        prompt = [
+            {"role": "system", "content": (
+                "Convert this relationship description from the user's perspective to the partner's perspective. "
+                "Change 'my wife/husband/partner' to 'you are' and make it first-person for the partner. "
+                "Keep all other details intact.\n\n"
+                f"User's perspective: '{user_profile}'\n\n"
+                "Respond with ONLY the converted text."
+            )},
+            {"role": "user", "content": user_profile}
+        ]
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=prompt,
+                temperature=0.3,
+                max_tokens=100
+            )
+            self.partner_profile = response.choices[0].message.content.strip()
+        except Exception:
+            # Fallback to simple conversion
+            self.partner_profile = user_profile.replace("my ", "you are ").replace("My ", "You are ")
+        
+        # Update partner's profile for system prompt
+        self.partner.profile = self.partner_profile
+
+    async def set_scenario(self, user_scenario: str) -> None:
+        """Set scenario from user's perspective and generate partner's perspective"""
+        self.user_scenario = user_scenario.strip()
+        
+        # Generate partner's perspective
+        prompt = [
+            {"role": "system", "content": (
+                "Convert this scenario description from the user's perspective to the partner's perspective. "
+                "Change 'I' to 'your partner' and make it describe what's happening to/around the partner. "
+                "Keep the emotional context intact.\n\n"
+                f"User's perspective: '{user_scenario}'\n\n"
+                "Respond with ONLY the converted text."
+            )},
+            {"role": "user", "content": user_scenario}
+        ]
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=prompt,
+                temperature=0.3,
+                max_tokens=100
+            )
+            self.partner_scenario = response.choices[0].message.content.strip()
+        except Exception:
+            # Fallback to simple conversion
+            self.partner_scenario = user_scenario.replace("I ", "your partner ").replace(" me ", " them ")
+        
+        # Update partner's scenario for system prompt
+        self.partner.scenario = self.partner_scenario
+
+    async def dialogue(self, user_text: str) -> tuple[str, ChatChannel]:
+        # Determine who the user is talking to
+        who = self.router.route(user_text)
+        
+        # Clean the message if it starts with @coach
+        clean_text = user_text
+        if user_text.strip().lower().startswith("@coach"):
+            clean_text = user_text.strip()[6:].strip()  # Remove "@coach" prefix
+            
+        # Add user message to appropriate channel
+        self.history.add("user", clean_text, who)
+        
+        # If responding as Partner, update emotional state first
+        if who == ChatChannel.PARTNER:
+            await self.partner.react(self.history)
+        
+        # Generate and add response
+        reply = await self.speakers[who].respond(self.history, self.user_profile, self.user_scenario)
         self.history.add("assistant", reply, who)
         return reply, who
 
@@ -176,6 +323,13 @@ async def start() -> None:
     conv = Conversation()
     cl.user_session.set("conv", conv)
     cl.user_session.set("stage", Stage.PROFILE)
+    
+    # Send welcome message
+    await cl.Message(
+        "Welcome to We-Relate! Let's start by profiling the person you want to practice with.",
+        author="💻 System"
+    ).send()
+    
     await STAGE_STRATEGY[Stage.PROFILE].prompt()
 
 

@@ -19,8 +19,9 @@ def login():
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
+            session['full_name'] = f"{user.first_name} {user.last_name}"
+            session['initials'] = f"{user.first_name[0].upper()}{user.last_name[0].upper()}"
             
-            flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'error')

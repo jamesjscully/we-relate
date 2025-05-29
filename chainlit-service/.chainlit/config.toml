@@ -71,10 +71,16 @@ edit_message = true
 
 [UI]
 # Name of the app and chatbot.
-name = "We-Relate"
+name = "Chainlit"
 
 # Show the readme while the thread is empty.
 show_readme_as_default = true
+
+# Custom text for the readme link
+readme_link_text = "Instructions"
+
+# Hide theme selector
+show_theme_selector = false
 
 # Description of the app and chatbot. This is used for HTML tags.
 description = "Practice intentional dialogue for better relationships"
@@ -93,7 +99,7 @@ hide_cot = false
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.
-custom_css = "/public/static/css/chainlit-custom.css"
+# custom_css = "/public/static/css/we-relate-theme.css"
 
 # Specify a Javascript file that can be used to customize the user interface.
 # The Javascript file can be served from the public directory or via an external link.
@@ -113,12 +119,12 @@ default_theme = "light"
     paper = "#ffffff"
 
     [UI.theme.light.primary]
-        main = "#6366f1"
-        dark = "#5b21b6"
-        light = "#a5b4fc"
+        main = "#3b82f6"
+        dark = "#2563eb"
+        light = "#93c5fd"
 
     [UI.theme.light.text]
-        primary = "#0f172a"
+        primary = "#1e293b"
         secondary = "#64748b"
 
 [meta]

@@ -36,7 +36,7 @@ edit_message = true
 
 # Authorize users to spontaneously upload files with messages
 [features.spontaneous_file_upload]
-    enabled = true
+    enabled = false
     # Define accepted file types using MIME types
     # Examples:
     # 1. For specific file types:
@@ -55,7 +55,7 @@ edit_message = true
     sample_rate = 24000
 
 [features.mcp.sse]
-    enabled = true
+    enabled = false
 
 [features.mcp.stdio]
     enabled = true
@@ -66,7 +66,7 @@ edit_message = true
 
 [UI]
 # Name of the assistant.
-name = "Assistant"
+name = "We-Relate Coach"
 
 # default_theme = "dark"
 
@@ -82,7 +82,7 @@ cot = "full"
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.
-# custom_css = "/public/test.css"
+custom_css = "/public/static/css/we-relate-theme.css"
 
 # Specify additional attributes for a custom CSS file
 # custom_css_attributes = "media=\"print\""

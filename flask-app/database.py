@@ -23,6 +23,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
             password_hash TEXT NOT NULL,
             tier TEXT DEFAULT 'free',
             credits INTEGER DEFAULT 100,
@@ -42,6 +44,36 @@ def init_db():
         )
     ''')
     
+    # Subscriptions table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            tier TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            start_date TIMESTAMP NOT NULL,
+            end_date TIMESTAMP,
+            stripe_subscription_id TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Payments table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            currency TEXT DEFAULT 'usd',
+            status TEXT DEFAULT 'pending',
+            stripe_payment_intent_id TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -56,8 +88,8 @@ def create_demo_user():
         if not cursor.fetchone():
             demo_password = generate_password_hash('demo123')
             cursor.execute(
-                'INSERT INTO users (username, email, password_hash, tier, credits) VALUES (?, ?, ?, ?, ?)',
-                ('demo', 'demo@example.com', demo_password, 'premium', 500)
+                'INSERT INTO users (username, email, first_name, last_name, password_hash, tier, credits) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                ('demo', 'demo@example.com', 'Demo', 'User', demo_password, 'premium', 500)
             )
             conn.commit()
             print("Demo user created: username=demo, password=demo123")

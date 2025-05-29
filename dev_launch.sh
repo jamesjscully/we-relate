@@ -107,7 +107,7 @@ fi
 
 print_status "Starting Chainlit service on port 8000..."
 cd chainlit-service
-poetry run chainlit run app.py --host 0.0.0.0 --port 8000 > /tmp/chainlit.log 2>&1 &
+poetry run chainlit run app.py --host 0.0.0.0 --port 8000 -h > /tmp/chainlit.log 2>&1 &
 CHAINLIT_PID=$!
 cd ..
 
@@ -149,8 +149,18 @@ echo "   • Flask PID:       $FLASK_PID"
 echo "   • Chainlit PID:    $CHAINLIT_PID"
 echo "   • Python Version:  $(poetry run python --version)"
 echo
+
+# Open Flask app in default browser
+print_status "Opening Flask app in browser..."
+if command -v xdg-open > /dev/null; then
+    xdg-open http://localhost:5000 > /dev/null 2>&1 &
+elif command -v open > /dev/null; then
+    open http://localhost:5000 > /dev/null 2>&1 &
+else
+    print_warning "Could not detect browser command. Please open http://localhost:5000 manually."
+fi
+
 print_warning "Press Ctrl+C to stop both services"
-echo
 
 # Wait for both processes
 wait $FLASK_PID $CHAINLIT_PID 
