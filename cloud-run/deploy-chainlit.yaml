@@ -1,0 +1,68 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: we-relate-chainlit
+  labels:
+    app: we-relate
+    component: chainlit
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      labels:
+        app: we-relate
+        component: chainlit
+      annotations:
+        autoscaling.knative.dev/maxScale: "5"
+        autoscaling.knative.dev/minScale: "1"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/memory: "1Gi"
+        run.googleapis.com/cpu: "1000m"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 900  # Longer timeout for AI processing
+      containers:
+      - image: gcr.io/PROJECT_ID/we-relate-chainlit:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: CHAINLIT_HOST
+          value: "0.0.0.0"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: we-relate-secrets
+              key: openai-api-key
+        - name: PHOENIX_SERVICE_URL
+          value: "https://we-relate-phoenix-HASH-uc.a.run.app"
+        - name: PHOENIX_TRACING_ENABLED
+          value: "true"
+        - name: CHAINLIT_AUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: we-relate-secrets
+              key: chainlit-auth-secret
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        startupProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 120
+          timeoutSeconds: 10
+          periodSeconds: 30
+          failureThreshold: 3 

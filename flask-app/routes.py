@@ -73,10 +73,16 @@ def register_main_routes(app):
     @admin_required
     def admin_dashboard():
         """Admin dashboard with system overview and controls"""
-        user = User.query.filter_by(email=session['email']).first()
+        # Get user from session using the correct method
+        user = User.get_by_id(session['user_id'])
         
-        # You can add admin-specific data here
-        total_users = User.query.count()
+        # Get total user count (we'll need to add a method for this)
+        import sqlite3
+        conn = sqlite3.connect('app.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM users')
+        total_users = cursor.fetchone()[0]
+        conn.close()
         
         return render_template('admin_dashboard.html', 
                              user=user,

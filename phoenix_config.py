@@ -16,7 +16,9 @@ class PhoenixConfig:
     
     def __init__(self):
         self.project_name = "we-relate"
-        self.endpoint = os.getenv("PHOENIX_ENDPOINT", "http://localhost:6006/v1/traces")
+        # Support both local development and external Phoenix service
+        phoenix_service_url = os.getenv("PHOENIX_SERVICE_URL", "http://localhost:6006")
+        self.endpoint = f"{phoenix_service_url}/v1/traces"
         self.auto_instrument = True
         self.enabled = os.getenv("PHOENIX_TRACING_ENABLED", "true").lower() == "true"
         self.tracer_provider: Optional[trace.TracerProvider] = None
@@ -48,6 +50,7 @@ class PhoenixConfig:
             
         except Exception as e:
             logger.error(f"Failed to set up Phoenix tracing: {e}")
+            logger.info("Continuing without Phoenix tracing...")
             return False
 
     def get_tracer(self) -> Optional[trace.Tracer]:

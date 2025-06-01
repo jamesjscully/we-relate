@@ -1,46 +1,90 @@
-services:
-  phoenix:
-    image: arizephoenix/phoenix:latest
-    ports:
-      - "6006:6006"
-    environment:
-      - PHOENIX_WORKING_DIR=/tmp/phoenix
-    volumes:
-      - phoenix_data:/tmp/phoenix
-    restart: unless-stopped
+# We-Relate Docker Compose Configuration
+# Provides complete development environment with Flask, Chainlit, and Phoenix services
 
+services:
+  # Flask Application - Main web interface
   flask-app:
-    build:
-      context: .
-      dockerfile: ./flask-app/Dockerfile
+    build: 
+      context: ./flask-app
+      dockerfile: Dockerfile
     ports:
-      - "5000:8080"
+      - "5000:5000"
     environment:
-      - SECRET_KEY=dev-secret-key-change-in-production
-      - CHAINLIT_SERVICE_URL=http://chainlit-service:8080
-      - DATABASE_PATH=/app/data/app.db
       - FLASK_ENV=development
-      - PORT=8080
+      - FLASK_DEBUG=1
+      - DATABASE_URL=sqlite:///we_relate.db
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - PHOENIX_SERVICE_URL=http://phoenix:8080
     volumes:
-      - flask_data:/app/data
+      - ./flask-app:/app
+      - ./flask-app/data:/app/data
     depends_on:
-      - chainlit-service
       - phoenix
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - we-relate-net
 
+  # Chainlit Service - AI conversation interface  
   chainlit-service:
     build:
-      context: .
-      dockerfile: ./chainlit-service/Dockerfile
+      context: ./chainlit-service
+      dockerfile: Dockerfile
     ports:
-      - "8000:8080"
+      - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - PORT=8080
+      - PHOENIX_SERVICE_URL=http://phoenix:8080
+      - PHOENIX_TRACING_ENABLED=true
+    volumes:
+      - ./chainlit-service:/app
+      - shared-data:/app/shared
     depends_on:
       - phoenix
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - we-relate-net
 
+  # Phoenix Observability Service - AI monitoring and tracing (Internal only)
+  phoenix:
+    build:
+      context: ./phoenix-service
+      dockerfile: Dockerfile
+    # No external ports - access only through Flask admin proxy
+    environment:
+      - PORT=8080
+      - PHOENIX_WORKING_DIR=/app/data
+      - PHOENIX_HOST=0.0.0.0
+    volumes:
+      - phoenix-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import requests; requests.get(\"http://localhost:8080/\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - we-relate-net
+    container_name: phoenix-secure
+    # Note: No external port mapping - security through Flask proxy only
+
+# Shared volumes for data persistence
 volumes:
-  flask_data:
-  phoenix_data: 
+  shared-data:
+    driver: local
+  phoenix-data:
+    driver: local
+
+# Internal network for service communication
+networks:
+  we-relate-net:
+    driver: bridge 
