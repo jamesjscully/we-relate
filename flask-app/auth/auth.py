@@ -28,6 +28,32 @@ def login():
     
     return render_template('login.html')
 
+@auth_bp.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login"""
+    if request.method == 'POST':
+        email = request.form['username']  # Form still uses 'username' field name for compatibility
+        password = request.form['password']
+        
+        # Try to find user by email (which is now the username)
+        user = User.get_by_email(email) or User.get_by_username(email)
+        
+        if user and user.check_password(password):
+            if user.is_admin:
+                session['user_id'] = user.id
+                session['username'] = user.username
+                session['full_name'] = f"{user.first_name} {user.last_name}"
+                session['initials'] = f"{user.first_name[0].upper()}{user.last_name[0].upper()}"
+                session['is_admin'] = True
+                
+                return redirect(url_for('admin_dashboard'))
+            else:
+                flash('Admin privileges required', 'error')
+        else:
+            flash('Invalid email or password', 'error')
+    
+    return render_template('admin_login.html')
+
 @auth_bp.route('/logout')
 def logout():
     """User logout"""

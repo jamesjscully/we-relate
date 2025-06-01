@@ -7,7 +7,7 @@ class User:
     """User model for authentication and user management"""
     
     def __init__(self, id=None, username=None, email=None, first_name=None, last_name=None, 
-                 password_hash=None, tier='free', credits=100, created_at=None):
+                 password_hash=None, tier='free', credits=100, is_admin=False, created_at=None):
         self.id = id
         self.username = username
         self.email = email
@@ -16,10 +16,12 @@ class User:
         self.password_hash = password_hash
         self.tier = tier
         self.credits = credits
+        self.is_admin = bool(is_admin)
         self.created_at = created_at or datetime.now()
     
     @classmethod
-    def create(cls, username: str, email: str, first_name: str, last_name: str, password: str, tier: str = 'free') -> 'User':
+    def create(cls, username: str, email: str, first_name: str, last_name: str, password: str, 
+               tier: str = 'free', is_admin: bool = False) -> 'User':
         """Create a new user"""
         password_hash = generate_password_hash(password)
         
@@ -28,8 +30,8 @@ class User:
         
         try:
             cursor.execute(
-                'INSERT INTO users (username, email, first_name, last_name, password_hash, tier, credits) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (username, email, first_name, last_name, password_hash, tier, 100 if tier == 'free' else 500)
+                'INSERT INTO users (username, email, first_name, last_name, password_hash, tier, credits, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                (username, email, first_name, last_name, password_hash, tier, 100 if tier == 'free' else 500, is_admin)
             )
             user_id = cursor.lastrowid
             conn.commit()
@@ -46,7 +48,7 @@ class User:
         conn = sqlite3.connect('app.db')
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, created_at FROM users WHERE id = ?',
+            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, is_admin, created_at FROM users WHERE id = ?',
             (user_id,)
         )
         row = cursor.fetchone()
@@ -62,7 +64,7 @@ class User:
         conn = sqlite3.connect('app.db')
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, created_at FROM users WHERE username = ?',
+            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, is_admin, created_at FROM users WHERE username = ?',
             (username,)
         )
         row = cursor.fetchone()
@@ -78,7 +80,7 @@ class User:
         conn = sqlite3.connect('app.db')
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, created_at FROM users WHERE email = ?',
+            'SELECT id, username, email, first_name, last_name, password_hash, tier, credits, is_admin, created_at FROM users WHERE email = ?',
             (email,)
         )
         row = cursor.fetchone()
@@ -122,6 +124,7 @@ class User:
             'last_name': self.last_name,
             'tier': self.tier,
             'credits': self.credits,
+            'is_admin': self.is_admin,
             'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at
         }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # We-Relate Development Launch Script
-# Starts both Flask app and Chainlit service using Poetry
+# Starts Flask app and Chainlit service using Poetry
 
 set -e  # Exit on any error
 
@@ -50,11 +50,24 @@ kill_port() {
     fi
 }
 
+# Function to kill Phoenix processes specifically
+kill_phoenix() {
+    print_warning "Stopping Phoenix processes..."
+    # Kill Phoenix processes by name
+    pkill -f "phoenix" 2>/dev/null || true
+    # Kill processes on Phoenix ports
+    kill_port 6006    # Phoenix web UI
+    kill_port 4317    # Phoenix gRPC port
+    kill_port 4318    # Phoenix HTTP OTLP port
+    sleep 2
+}
+
 # Function to cleanup on exit
 cleanup() {
     print_warning "Shutting down services..."
     kill_port 5000
     kill_port 8000
+    kill_phoenix
     exit 0
 }
 
@@ -86,6 +99,7 @@ poetry env info --path > /dev/null 2>&1 || {
 # Kill any existing processes on our ports
 kill_port 5000
 kill_port 8000
+kill_phoenix
 
 print_status "Starting Flask app on port 5000..."
 cd flask-app
@@ -105,31 +119,38 @@ else
     exit 1
 fi
 
-print_status "Starting Chainlit service on port 8000..."
+print_status "Starting Chainlit service (with Phoenix) on port 8000..."
 cd chainlit-service
 poetry run chainlit run app.py --host 0.0.0.0 --port 8000 -h > /tmp/chainlit.log 2>&1 &
 CHAINLIT_PID=$!
 cd ..
 
 # Wait for Chainlit to start (it takes longer to initialize)
-print_status "Waiting for Chainlit to initialize..."
-sleep 3
+print_status "Waiting for Chainlit and Phoenix to initialize..."
+sleep 5
 
 # Check if Chainlit started successfully with retries
 CHAINLIT_READY=false
-for i in {1..10}; do
+for i in {1..15}; do
     if check_port 8000; then
         CHAINLIT_READY=true
         break
     fi
-    print_status "Waiting for Chainlit... (attempt $i/10)"
+    print_status "Waiting for Chainlit... (attempt $i/15)"
     sleep 2
 done
 
 if [ "$CHAINLIT_READY" = true ]; then
     print_success "Chainlit service started successfully on http://localhost:8000"
+    
+    # Check if Phoenix started
+    if check_port 6006; then
+        print_success "Phoenix observability UI available at http://localhost:6006"
+    else
+        print_warning "Phoenix UI not detected, but continuing..."
+    fi
 else
-    print_error "Failed to start Chainlit service after 20 seconds"
+    print_error "Failed to start Chainlit service after 30 seconds"
     print_error "Chainlit logs:"
     tail -20 /tmp/chainlit.log 2>/dev/null || echo "No logs available"
     kill $FLASK_PID 2>/dev/null || true
@@ -138,16 +159,24 @@ else
 fi
 
 echo
-print_success "🎉 Both services are running!"
+print_success "🎉 All services are running!"
 echo
 echo "📱 Services:"
-echo "   • Flask App:       http://localhost:5000"
-echo "   • Chainlit Service: http://localhost:8000"
+echo "   • Flask App:                http://localhost:5000"
+echo "   • Chainlit Service:         http://localhost:8000"
+if check_port 6006; then
+echo "   • Phoenix Observability:    http://localhost:6006"
+fi
 echo
 echo "🔧 Development Info:"
-echo "   • Flask PID:       $FLASK_PID"
-echo "   • Chainlit PID:    $CHAINLIT_PID"
-echo "   • Python Version:  $(poetry run python --version)"
+echo "   • Flask PID:              $FLASK_PID"
+echo "   • Chainlit PID:           $CHAINLIT_PID"
+echo "   • Python Version:         $(poetry run python --version)"
+echo
+echo "👨‍💼 Admin Access:"
+echo "   • Admin Login:            http://localhost:5000/auth/admin/login"
+echo "   • Admin Dashboard:        http://localhost:5000/admin"
+echo "   • Default Admin:          admin@we-relate.com / admin123"
 echo
 
 # Open Flask app in default browser
@@ -156,11 +185,13 @@ if command -v xdg-open > /dev/null; then
     xdg-open http://localhost:5000 > /dev/null 2>&1 &
 elif command -v open > /dev/null; then
     open http://localhost:5000 > /dev/null 2>&1 &
-else
-    print_warning "Could not detect browser command. Please open http://localhost:5000 manually."
 fi
 
-print_warning "Press Ctrl+C to stop both services"
+print_status "Press Ctrl+C to stop all services"
+echo
+echo "📊 Real-time Logs:"
+echo "   • Chainlit:           tail -f /tmp/chainlit.log"
+echo
 
-# Wait for both processes
-wait $FLASK_PID $CHAINLIT_PID 
+# Wait for interrupt signal
+wait 

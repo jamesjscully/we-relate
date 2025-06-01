@@ -10,7 +10,7 @@ import os
 
 # Import configuration and modules
 from config import config
-from database import init_db, create_demo_user
+from database import init_db, create_demo_user, create_admin_user
 from routes import register_main_routes
 from api_routes import register_api_routes
 
@@ -47,6 +47,9 @@ if __name__ == '__main__':
     
     # Create demo user for testing
     create_demo_user()
+    
+    # Create admin user for troubleshooting
+    create_admin_user()
     
     # Run the app
     port = int(os.environ.get('PORT', 5000))

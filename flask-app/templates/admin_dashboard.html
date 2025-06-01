@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - We-Relate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-shield-alt"></i> We-Relate Admin
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        {% if user %}
+                            <span class="badge bg-light text-dark me-2">{{ user.initials if user.first_name and user.last_name else user.first_name[0] if user.first_name else 'A' }}</span>
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            Admin
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                </h1>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Chat Interface Card -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-comments"></i> Standard Chat Interface
+                        </h5>
+                        <p class="card-text">
+                            Access the main chat interface where users practice intentional dialogue with AI partners.
+                        </p>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted">Port: 8000</small>
+                            </div>
+                            <div class="col-6">
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ config.CHAINLIT_SERVICE_URL }}" target="_blank" class="btn btn-primary w-100">
+                            <i class="fas fa-comments"></i> Launch Chat Interface
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Card -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-chart-line"></i> Phoenix Analytics
+                        </h5>
+                        <p class="card-text">
+                            View real-time LLM analytics, conversation flows, and system performance metrics.
+                        </p>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted">Port: 6006</small>
+                            </div>
+                            <div class="col-6">
+                                <span class="badge bg-info">Monitoring</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="http://localhost:6006" target="_blank" class="btn btn-info w-100">
+                            <i class="fas fa-chart-line"></i> View Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status Card -->
+            <div class="col-md-6">
+                <div class="card h-100 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server"></i> System Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Monitor system health and performance metrics.
+                        </p>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <h6 class="text-success mb-1">
+                                        <i class="fas fa-check-circle"></i> Flask App
+                                    </h6>
+                                    <small class="text-muted">Running</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <h6 class="text-success mb-1">
+                                        <i class="fas fa-check-circle"></i> Chainlit
+                                    </h6>
+                                    <small class="text-muted">Running</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('health') }}" class="btn btn-info w-100" target="_blank">
+                            <i class="fas fa-heartbeat"></i> Health Check
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Tools Card -->
+            <div class="col-md-6">
+                <div class="card h-100 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tools"></i> Admin Tools
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Administrative tools and utilities for managing the We-Relate platform.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-success btn-sm" disabled>
+                                <i class="fas fa-users"></i> User Management (Coming Soon)
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" disabled>
+                                <i class="fas fa-chart-bar"></i> Analytics (Coming Soon)
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" disabled>
+                                <i class="fas fa-cog"></i> System Config (Coming Soon)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="col-md-6">
+                <div class="card h-100 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Common administrative actions and shortcuts.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-comments"></i> Regular Chat Mode
+                            </a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user"></i> User Login Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-dark">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> Admin Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Current Admin:</h6>
+                                <p class="mb-1">{{ user.first_name }} {{ user.last_name }}</p>
+                                <p class="text-muted">{{ user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Admin Privileges:</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li><i class="fas fa-check text-success"></i> User Management</li>
+                                    <li><i class="fas fa-check text-success"></i> System Monitoring</li>
+                                    <li><i class="fas fa-check text-success"></i> Configuration Access</li>
+                                    <li><i class="fas fa-check text-success"></i> Phoenix Analytics Access</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+</body>
+</html> 

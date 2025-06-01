@@ -1,15 +1,14 @@
 from functools import wraps
-from flask import session, redirect, url_for, jsonify, request
+from flask import session, redirect, url_for, jsonify, request, flash
 from .models import User
 
 def login_required(f):
-    """Decorator to require login for protected routes"""
+    """Decorator to require user login"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            if request.is_json:
-                return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for('login'))
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -18,15 +17,13 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            if request.is_json:
-                return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for('login'))
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('auth.admin_login'))
         
         user = User.get_by_id(session['user_id'])
-        if not user or user.tier != 'admin':
-            if request.is_json:
-                return jsonify({'error': 'Admin privileges required'}), 403
-            return redirect(url_for('index'))
+        if not user or not user.is_admin:
+            flash('Admin privileges required to access this page.', 'error')
+            return redirect(url_for('auth.admin_login'))
         
         return f(*args, **kwargs)
     return decorated_function

@@ -5,7 +5,7 @@ from flask import render_template, session, redirect, url_for, request, jsonify,
 from datetime import datetime
 
 from auth.models import User
-from auth.decorators import login_required
+from auth.decorators import login_required, admin_required
 
 
 def register_main_routes(app):
@@ -68,6 +68,19 @@ def register_main_routes(app):
         return render_template('chat.html', 
                              chainlit_url=chainlit_url,
                              user=user.to_dict())
+
+    @app.route('/admin')
+    @admin_required
+    def admin_dashboard():
+        """Admin dashboard with system overview and controls"""
+        user = User.query.filter_by(email=session['email']).first()
+        
+        # You can add admin-specific data here
+        total_users = User.query.count()
+        
+        return render_template('admin_dashboard.html', 
+                             user=user,
+                             total_users=total_users)
 
     @app.route('/billing')
     @login_required
