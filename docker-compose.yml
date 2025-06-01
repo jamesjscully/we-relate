@@ -1,4 +1,14 @@
 services:
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+    environment:
+      - PHOENIX_WORKING_DIR=/tmp/phoenix
+    volumes:
+      - phoenix_data:/tmp/phoenix
+    restart: unless-stopped
+
   flask-app:
     build:
       context: .
@@ -15,6 +25,7 @@ services:
       - flask_data:/app/data
     depends_on:
       - chainlit-service
+      - phoenix
     restart: unless-stopped
 
   chainlit-service:
@@ -26,7 +37,10 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PORT=8080
+    depends_on:
+      - phoenix
     restart: unless-stopped
 
 volumes:
-  flask_data: 
+  flask_data:
+  phoenix_data: 

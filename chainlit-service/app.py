@@ -1,17 +1,18 @@
-# app.py  ── regular chainlit app, run with:  chainlit run app.py
+# core.py - Main integration point for We-Relate Chainlit app
 import chainlit as cl
-import asyncio
-from core import WeRelateApp
+from ui_controller import ChainlitUIController
 
-# Create the app instance
-app = WeRelateApp()
+# Create global UI controller instance
+ui_controller = ChainlitUIController()
+
 
 @cl.on_chat_start
-async def start():
-    """Initialize the chat session"""
-    await app.start()
+async def on_chat_start():
+    """Initialize new chat session"""
+    await ui_controller.initialize_session()
+
 
 @cl.on_message
-async def main(message: cl.Message):
-    """Handle incoming messages"""
-    await app.handle_message(message.content)
+async def on_message(message: cl.Message):
+    """Handle incoming user messages"""
+    await ui_controller.handle_user_message(message) 

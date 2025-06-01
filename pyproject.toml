@@ -20,6 +20,8 @@ werkzeug = "^3.0.0"
 pyjwt = "2.8.0"
 requests = "2.31.0"
 gunicorn = "^21.2.0"
+arize-phoenix-otel = "^0.10.1"
+openinference-instrumentation-openai = "^0.1.30"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

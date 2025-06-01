@@ -1,11 +1,9 @@
-# core.py - Shared chat functionality for We-Relate
+# conversation.py - Core conversation logic for We-Relate
 from __future__ import annotations
 import os
 import openai
-import json
 from typing import Dict, List, Protocol
 from enum import Enum, auto
-from abc import ABC, abstractmethod
 
 # Initialize OpenAI async client
 client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -99,6 +97,72 @@ class Partner(Speaker):
             """
         )
 
+    async def set_profile_from_user_perspective(self, user_profile: str) -> str:
+        """
+        Convert user's perspective of the relationship to partner's perspective.
+        Returns the partner's perspective for use by other components (like coach).
+        """
+        user_profile = user_profile.strip()
+        
+        # Generate partner's perspective
+        prompt = [
+            {"role": "system", "content": (
+                "Convert this relationship description from the user's perspective to the partner's perspective. "
+                "Change 'my wife/husband/partner' to 'you are' and make it first-person for the partner. "
+                "Keep all other details intact.\n\n"
+                f"User's perspective: '{user_profile}'\n\n"
+                "Respond with ONLY the converted text."
+            )},
+            {"role": "user", "content": user_profile}
+        ]
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=prompt,
+                temperature=0.3,
+                max_tokens=100
+            )
+            self.profile = response.choices[0].message.content.strip()
+        except Exception:
+            # Fallback to simple conversion
+            self.profile = user_profile.replace("my ", "you are ").replace("My ", "You are ")
+        
+        return user_profile  # Return the original user perspective
+
+    async def set_scenario_from_user_perspective(self, user_scenario: str) -> str:
+        """
+        Convert user's perspective of the scenario to partner's perspective.
+        Returns the user's perspective for use by other components (like coach).
+        """
+        user_scenario = user_scenario.strip()
+        
+        # Generate partner's perspective
+        prompt = [
+            {"role": "system", "content": (
+                "Convert this scenario description from the user's perspective to the partner's perspective. "
+                "Change 'I' to 'your partner' and make it describe what's happening to/around the partner. "
+                "Keep the emotional context intact.\n\n"
+                f"User's perspective: '{user_scenario}'\n\n"
+                "Respond with ONLY the converted text."
+            )},
+            {"role": "user", "content": user_scenario}
+        ]
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=prompt,
+                temperature=0.3,
+                max_tokens=100
+            )
+            self.scenario = response.choices[0].message.content.strip()
+        except Exception:
+            # Fallback to simple conversion
+            self.scenario = user_scenario.replace("I ", "your partner ").replace(" me ", " them ")
+        
+        return user_scenario  # Return the original user perspective
+
     async def react(self, history: ChatHistory) -> str:
         """Generate an emotional reaction to the latest user message and update emotional state"""
         # Get the latest user message from partner view
@@ -163,77 +227,6 @@ class Router:
         return ChatChannel.PARTNER
 
 
-# ────────────── stage machine ────────────────────────────────────── #
-class Stage(Enum):
-    PROFILE = auto()
-    SCENARIO = auto()
-    CHAT = auto()
-
-
-class StageHandler(Protocol):
-    async def prompt(self, app: "WeRelateApp") -> None: ...
-    async def handle(self, text: str, conv: "Conversation", app: "WeRelateApp") -> Stage: ...
-
-
-class ProfileStage(StageHandler):
-    async def prompt(self, app: "WeRelateApp") -> None:
-        await app.send_message(
-            "Describe **relationship** to the person *and* any diagnosed mental "
-            "condition they have (one sentence).",
-            "💻 System")
-
-    async def handle(self, text: str, conv: "Conversation", app: "WeRelateApp") -> Stage:
-        await conv.set_profile(text, app)
-        return Stage.SCENARIO
-
-
-class ScenarioStage(StageHandler):
-    async def prompt(self, app: "WeRelateApp") -> None:
-        await app.send_message(
-            "Briefly set the **triggering scenario** (e.g., *I came home late "
-            "and she is yelling at me.*)",
-            "💻 System")
-
-    async def handle(self, text: str, conv: "Conversation", app: "WeRelateApp") -> Stage:
-        await conv.set_scenario(text, app)
-        await app.send_message(
-            "Perfect! The conversation is starting now. The Partner will speak first based on the scenario you described.",
-            "System")
-        
-        # Have the Partner automatically send the first message
-        partner_opening = await conv.speakers[ChatChannel.PARTNER].respond(conv.history)
-        conv.history.add("assistant", partner_opening, ChatChannel.PARTNER)
-        
-        label = "Partner"
-        icon = "🤼"
-        await app.send_message(f"{partner_opening}", f"{icon} {label}")
-        
-        await app.send_message(
-            "**You can now respond to your partner or type `@coach` for coaching advice.**",
-            "💻 System")
-        
-        return Stage.CHAT
-
-
-class ChatStage(StageHandler):
-    async def prompt(self, app: "WeRelateApp") -> None:  # never called; entry is via router
-        ...
-
-    async def handle(self, text: str, conv: "Conversation", app: "WeRelateApp") -> Stage:
-        reply, who = await conv.dialogue(text, app)
-        label = "Coach" if who is ChatChannel.COACH else "Partner"
-        icon = "🏋️" if who is ChatChannel.COACH else "🤼"
-        await app.send_message(f"{reply}", f"{icon} {label}")
-        return Stage.CHAT  # remain here
-
-
-STAGE_STRATEGY: Dict[Stage, StageHandler] = {
-    Stage.PROFILE: ProfileStage(),
-    Stage.SCENARIO: ScenarioStage(),
-    Stage.CHAT: ChatStage(),
-}
-
-
 # ────────────── conversation orchestrator ───────────────────────────────── #
 class Conversation:
     def __init__(self) -> None:
@@ -252,71 +245,30 @@ class Conversation:
         self.partner_profile: str | None = None
         self.partner_scenario: str | None = None
 
-    async def set_profile(self, user_profile: str, app: "WeRelateApp") -> None:
-        """Set profile from user's perspective and generate partner's perspective"""
-        self.user_profile = user_profile.strip()
+    async def set_profile(self, user_profile: str) -> None:
+        """Set profile by delegating to partner and updating coach"""
+        # Let partner handle the conversion and set its own profile
+        self.user_profile = await self.partner.set_profile_from_user_perspective(user_profile)
         
-        # Generate partner's perspective
-        prompt = [
-            {"role": "system", "content": (
-                "Convert this relationship description from the user's perspective to the partner's perspective. "
-                "Change 'my wife/husband/partner' to 'you are' and make it first-person for the partner. "
-                "Keep all other details intact.\n\n"
-                f"User's perspective: '{user_profile}'\n\n"
-                "Respond with ONLY the converted text."
-            )},
-            {"role": "user", "content": user_profile}
-        ]
+        # Store the partner's converted profile for reference
+        self.partner_profile = self.partner.profile
         
-        try:
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=prompt,
-                temperature=0.3,
-                max_tokens=100
-            )
-            self.partner_profile = response.choices[0].message.content.strip()
-        except Exception:
-            # Fallback to simple conversion
-            self.partner_profile = user_profile.replace("my ", "you are ").replace("My ", "You are ")
-        
-        # Update both speakers with the profile information
-        self.partner.profile = self.partner_profile
+        # Update coach with the user's perspective
         self.coach.partner_profile = self.user_profile
 
-    async def set_scenario(self, user_scenario: str, app: "WeRelateApp") -> None:
-        """Set scenario from user's perspective and generate partner's perspective"""
-        self.user_scenario = user_scenario.strip()
+    async def set_scenario(self, user_scenario: str) -> None:
+        """Set scenario by delegating to partner and updating coach"""
+        # Let partner handle the conversion and set its own scenario
+        self.user_scenario = await self.partner.set_scenario_from_user_perspective(user_scenario)
         
-        # Generate partner's perspective
-        prompt = [
-            {"role": "system", "content": (
-                "Convert this scenario description from the user's perspective to the partner's perspective. "
-                "Change 'I' to 'your partner' and make it describe what's happening to/around the partner. "
-                "Keep the emotional context intact.\n\n"
-                f"User's perspective: '{user_scenario}'\n\n"
-                "Respond with ONLY the converted text."
-            )},
-            {"role": "user", "content": user_scenario}
-        ]
+        # Store the partner's converted scenario for reference
+        self.partner_scenario = self.partner.scenario
         
-        try:
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=prompt,
-                temperature=0.3,
-                max_tokens=100
-            )
-            self.partner_scenario = response.choices[0].message.content.strip()
-        except Exception:
-            # Fallback to simple conversion
-            self.partner_scenario = user_scenario.replace("I ", "your partner ").replace(" me ", " them ")
-        
-        # Update both speakers with the scenario information
-        self.partner.scenario = self.partner_scenario
+        # Update coach with the user's perspective
         self.coach.partner_scenario = self.user_scenario
 
-    async def dialogue(self, user_text: str, app: "WeRelateApp") -> tuple[str, ChatChannel]:
+    async def process_user_message(self, user_text: str) -> tuple[str, ChatChannel]:
+        """Process user message and generate response (pure business logic)"""
         # Determine who the user is talking to
         who = self.router.route(user_text)
         
@@ -338,36 +290,6 @@ class Conversation:
         
         return reply, who
 
-
-# ────────────── Main App ────────────────────────────────────────────────── #
-class WeRelateApp:
-    """Main application runner for We-Relate chat"""
-    
-    def __init__(self):
-        self.conversation = Conversation()
-        self.stage = Stage.PROFILE
-    
-    async def send_message(self, content: str, author: str) -> None:
-        """Send a message via Chainlit"""
-        # Import here to avoid circular imports
-        import chainlit as cl
-        await cl.Message(content=content, author=author).send()
-    
-    async def start(self) -> None:
-        """Initialize the app"""
-        welcome_message = (
-            "# Welcome to We-Relate 💙\n\n"
-            "Practice intentional dialogue with AI to improve your real relationships. "
-            "Start by describing your relationship context."
-        )
-        await self.send_message(welcome_message, "💻 System")
-        await STAGE_STRATEGY[Stage.PROFILE].prompt(self)
-    
-    async def handle_message(self, content: str) -> None:
-        """Handle incoming message"""
-        next_stage = await STAGE_STRATEGY[self.stage].handle(content, self.conversation, self)
-        
-        if next_stage != self.stage and next_stage != Stage.CHAT:
-            await STAGE_STRATEGY[next_stage].prompt(self)
-        
-        self.stage = next_stage 
+    async def generate_partner_opening(self) -> str:
+        """Generate the partner's opening message based on the scenario"""
+        return await self.partner.respond(self.history) 
