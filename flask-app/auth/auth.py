@@ -141,5 +141,5 @@ def google_signin():
             return jsonify({'success': False, 'error': 'Invalid token'}), 400
             
     except Exception as e:
-        print(f"Google signin error: {e}")
-        return jsonify({'success': False, 'error': 'Internal server error'}), 500 
+        print(f"Google sign-in error: {e}")
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
