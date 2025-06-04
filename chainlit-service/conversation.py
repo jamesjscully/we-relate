@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize OpenAI async client
-client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_api_key = os.getenv("OPENAI_API_KEY", "test-key")
+client = openai.AsyncOpenAI(api_key=openai_api_key)
 
 # ────────────── error handling ─────────────────────────────────────── #
 class AIServiceError:

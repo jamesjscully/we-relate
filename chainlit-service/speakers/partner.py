@@ -7,7 +7,8 @@ from typing import Dict, List, Protocol, Optional
 
 # Import shared dependencies
 logger = logging.getLogger(__name__)
-client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_api_key = os.getenv("OPENAI_API_KEY", "test-key")
+client = openai.AsyncOpenAI(api_key=openai_api_key)
 
 
 class Partner:
