@@ -22,7 +22,7 @@ tracer = tracer_provider.get_tracer(__name__)
 
 # Test function with Phoenix decorator
 @tracer.chain
-def test_simple_function(input_text: str) -> str:
+def test_simple_function(input_text: str = "hello world") -> str:
     """Test function that will be traced by Phoenix"""
     print(f"Processing: {input_text}")
     processed = f"Processed: {input_text.upper()}"

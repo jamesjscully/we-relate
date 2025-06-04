@@ -7,7 +7,8 @@ from typing import Dict, List, Protocol, Optional
 
 # Import shared dependencies
 logger = logging.getLogger(__name__)
-client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_api_key = os.getenv("OPENAI_API_KEY", "test-key")
+client = openai.AsyncOpenAI(api_key=openai_api_key)
 
 # We'll need to import these from conversation after we refactor
 # For now, we'll define the minimal needed types here and import from conversation later
